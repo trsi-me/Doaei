@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}تفاصيل التقييم - دوائي{% endblock %}
+
+{% block content %}
+<div class="doctor-evaluation-detail-container">
+    <div class="page-header">
+        <h1><i class="fas fa-clipboard-list" style="color: #00BFA5;"></i> تفاصيل التقييم</h1>
+        <a href="{{ url_for('doctor_evaluations') }}" class="btn btn-secondary">العودة للقائمة</a>
+    </div>
+
+    <div class="evaluation-details">
+        <div class="detail-card">
+            <h2>معلومات التقييم</h2>
+            <div class="detail-item">
+                <span class="label">التاريخ:</span>
+                <span class="value">{% if evaluation.evaluation_date %}{{ evaluation.evaluation_date.strftime('%Y-%m-%d') }}{% else %}غير محدد{% endif %}</span>
+            </div>
+            <div class="detail-item">
+                <span class="label">المريض:</span>
+                <span class="value">{{ evaluation.patient.full_name if evaluation.patient else 'غير محدد' }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="label">النوع:</span>
+                <span class="value">{{ evaluation.evaluation_type or 'عام' }}</span>
+            </div>
+            {% if evaluation.next_visit_date %}
+            <div class="detail-item">
+                <span class="label">موعد الزيارة القادمة:</span>
+                <span class="value">{% if evaluation.next_visit_date %}{{ evaluation.next_visit_date.strftime('%Y-%m-%d') }}{% else %}غير محدد{% endif %}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if evaluation.symptoms %}
+        <div class="detail-card">
+            <h2>الأعراض</h2>
+            <p>{{ evaluation.symptoms }}</p>
+        </div>
+        {% endif %}
+
+        {% if evaluation.diagnosis %}
+        <div class="detail-card">
+            <h2>التشخيص</h2>
+            <p>{{ evaluation.diagnosis }}</p>
+        </div>
+        {% endif %}
+
+        {% if evaluation.vital_signs %}
+        <div class="detail-card">
+            <h2>العلامات الحيوية</h2>
+            <p>{{ evaluation.vital_signs }}</p>
+        </div>
+        {% endif %}
+
+        {% if evaluation.physical_examination %}
+        <div class="detail-card">
+            <h2>الفحص البدني</h2>
+            <p>{{ evaluation.physical_examination }}</p>
+        </div>
+        {% endif %}
+
+        {% if evaluation.lab_results %}
+        <div class="detail-card">
+            <h2>نتائج المختبر</h2>
+            <p>{{ evaluation.lab_results }}</p>
+        </div>
+        {% endif %}
+
+        {% if evaluation.recommendations %}
+        <div class="detail-card">
+            <h2>التوصيات</h2>
+            <p>{{ evaluation.recommendations }}</p>
+        </div>
+        {% endif %}
+
+        {% if evaluation.prescribed_medications %}
+        <div class="detail-card">
+            <h2>الأدوية الموصوفة</h2>
+            <p>{{ evaluation.prescribed_medications }}</p>
+        </div>
+        {% endif %}
+
+        {% if evaluation.notes %}
+        <div class="detail-card">
+            <h2>ملاحظات</h2>
+            <p>{{ evaluation.notes }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .doctor-evaluation-detail-container {
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        color: #333;
+    }
+
+    .evaluation-details {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .detail-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .detail-card h2 {
+        margin: 0 0 15px 0;
+        color: #333;
+        border-bottom: 2px solid #e0e0e0;
+        padding-bottom: 10px;
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .detail-item .label {
+        font-weight: 600;
+        color: #666;
+    }
+
+    .detail-item .value {
+        color: #333;
+    }
+
+    .detail-card p {
+        margin: 0;
+        color: #333;
+        line-height: 1.6;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-secondary {
+        background: #999;
+        color: white;
+    }
+</style>
+{% endblock %}
+

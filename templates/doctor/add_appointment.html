@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}إضافة موعد جديد - دوائي{% endblock %}
+
+{% block content %}
+<div class="doctor-add-appointment-container">
+    <div class="page-header">
+        <h1><i class="fas fa-calendar-plus" style="color: #42A5F5;"></i> إضافة موعد جديد</h1>
+        <a href="{{ url_for('doctor_appointments') }}" class="btn btn-secondary">العودة للقائمة</a>
+    </div>
+
+    <form method="POST" class="appointment-form">
+        <div class="form-group">
+            <label for="patient_id">المريض *</label>
+            <select name="patient_id" id="patient_id" required>
+                <option value="">اختر المريض</option>
+                {% for patient in patients %}
+                <option value="{{ patient.id }}">{{ patient.full_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="appointment_date">تاريخ الموعد *</label>
+            <input type="date" name="appointment_date" id="appointment_date" required>
+        </div>
+
+        <div class="form-group">
+            <label for="appointment_time">وقت الموعد *</label>
+            <input type="time" name="appointment_time" id="appointment_time" required>
+        </div>
+
+        <div class="form-group">
+            <label for="reason">السبب</label>
+            <textarea name="reason" id="reason" rows="4" placeholder="سبب الموعد..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="notes">ملاحظات</label>
+            <textarea name="notes" id="notes" rows="4" placeholder="ملاحظات إضافية..."></textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">حفظ الموعد</button>
+            <a href="{{ url_for('doctor_appointments') }}" class="btn btn-secondary">إلغاء</a>
+        </div>
+    </form>
+</div>
+
+<style>
+    .doctor-add-appointment-container {
+        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        color: #333;
+    }
+
+    .appointment-form {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1em;
+    }
+
+    .form-group textarea {
+        resize: vertical;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 30px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-block;
+        border: none;
+        cursor: pointer;
+        font-size: 1em;
+    }
+
+    .btn-primary {
+        background: #42A5F5;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #999;
+        color: white;
+    }
+</style>
+{% endblock %}
+

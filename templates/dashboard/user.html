@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة التحكم - دوائي{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <!-- الشريط الجانبي -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-tachometer-alt"></i> لوحة التحكم</h3>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="{{ url_for('dashboard') }}" class="active"><i class="fas fa-home"></i> الرئيسية</a></li>
+                <li><a href="{{ url_for('medications') }}"><i class="fas fa-pills"></i> الأدوية</a></li>
+                <li><a href="{{ url_for('consultations') }}"><i class="fas fa-comments"></i> الاستشارات</a></li>
+                <li><a href="{{ url_for('pharmacy_list') }}"><i class="fas fa-store"></i> الصيدليات</a></li>
+                <li><a href="{{ url_for('orders_list') }}"><i class="fas fa-shopping-cart"></i> الطلبات</a></li>
+                <li><a href="{{ url_for('reports') }}"><i class="fas fa-chart-bar"></i> التقارير</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- المحتوى الرئيسي -->
+    <div class="main-content">
+        <div class="content-header">
+            <h1><i class="fas fa-tachometer-alt"></i> لوحة التحكم</h1>
+            <p>نظرة عامة على النظام</p>
+        </div>
+
+        <!-- بطاقات الإحصائيات -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon users">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_users }}</h3>
+                    <p>إجمالي المستخدمين</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon patients">
+                    <i class="fas fa-user-injured"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_regular_users }}</h3>
+                    <p>المرضى</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon admins">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_admins }}</h3>
+                    <p>المستخدمون</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon medications">
+                    <i class="fas fa-pills"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_medications }}</h3>
+                    <p>الأدوية النشطة</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon consultations">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.pending_consultations }}</h3>
+                    <p>استشارات معلقة</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon reviews">
+                    <i class="fas fa-star" style="color: #FFD54F;"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_reviews }}</h3>
+                    <p>المراجعات</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon orders">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_orders }}</h3>
+                    <p>إجمالي الطلبات</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon pharmacies">
+                    <i class="fas fa-store"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_pharmacies }}</h3>
+                    <p>الصيدليات النشطة</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- المزيد من الإحصائيات -->
+        <div class="additional-stats">
+            <div class="stat-row">
+                <div class="stat-item">
+                    <span class="stat-label">المستخدمون النشطون (آخر 30 يوم)</span>
+                    <span class="stat-value">{{ stats.active_users }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">الطلبات المعلقة</span>
+                    <span class="stat-value">{{ stats.pending_orders }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">إجمالي الإيرادات</span>
+                    <span class="stat-value">{{ "%.2f"|format(stats.total_revenue) }} ريال</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .admin-container {
+        display: flex;
+        min-height: 100vh;
+        background: var(--bg-gradient);
+    }
+
+    .admin-container::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at 20% 80%, rgba(0, 191, 166, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(79, 195, 247, 0.1) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .sidebar {
+        width: 250px;
+        background: var(--bg-glass);
+        backdrop-filter: blur(20px);
+        border-left: 1px solid rgba(0, 191, 166, 0.2);
+        padding: var(--spacing-lg);
+    }
+
+    .sidebar-header h3 {
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-lg);
+        font-size: 1.2em;
+    }
+
+    .sidebar-nav ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .sidebar-nav li {
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .sidebar-nav a {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-md);
+        color: var(--text-secondary);
+        text-decoration: none;
+        border-radius: var(--border-radius);
+        transition: all 0.3s ease;
+    }
+
+    .sidebar-nav a:hover,
+    .sidebar-nav a.active {
+        background: rgba(0, 191, 166, 0.1);
+        color: var(--primary-color);
+    }
+
+    .main-content {
+        flex: 1;
+        padding: var(--spacing-xl);
+    }
+
+    .content-header {
+        margin-bottom: var(--spacing-2xl);
+    }
+
+    .content-header h1 {
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .content-header p {
+        color: var(--text-secondary);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .stat-card {
+        background: var(--bg-glass);
+        backdrop-filter: blur(20px);
+        border-radius: var(--border-radius-lg);
+        padding: var(--spacing-lg);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-lg);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary-color);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5em;
+        color: white;
+    }
+
+    .stat-icon.users { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .stat-icon.patients { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .stat-icon.admins { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .stat-icon.medications { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+    .stat-icon.consultations { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+    .stat-icon.ratings { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+    .stat-icon.orders { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+    .stat-icon.pharmacies { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
+
+    .stat-info h3 {
+        font-size: 2em;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .stat-info p {
+        color: var(--text-secondary);
+        margin: var(--spacing-xs) 0 0 0;
+    }
+
+    .additional-stats {
+        background: var(--bg-glass);
+        backdrop-filter: blur(20px);
+        border-radius: var(--border-radius-lg);
+        padding: var(--spacing-lg);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .stat-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--spacing-lg);
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.9em;
+    }
+
+    .stat-value {
+        color: var(--primary-color);
+        font-size: 1.5em;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}

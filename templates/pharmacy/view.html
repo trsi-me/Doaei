@@ -1,0 +1,862 @@
+{% extends "base.html" %}
+
+{% block title %}عرض الصيدلية - دوائي{% endblock %}
+
+{% block content %}
+<div class="pharmacy-view-container">
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-info">
+                <h1><i class="fas fa-store"></i> {{ pharmacy.name }}</h1>
+                <p>تفاصيل الصيدلية</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('pharmacy_list') }}" class="btn-secondary">
+                    <i class="fas fa-arrow-right"></i> العودة للقائمة
+                </a>
+                <a href="{{ url_for('edit_pharmacy', id=pharmacy.id) }}" class="btn-primary">
+                    <i class="fas fa-edit"></i> تعديل
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="pharmacy-content">
+        <div class="pharmacy-main">
+            <div class="pharmacy-overview">
+                <div class="pharmacy-header">
+                    <div class="pharmacy-logo">
+                        <img src="{{ pharmacy.logo_url or url_for('static', filename='images/default-pharmacy.png') }}"
+                            alt="شعار الصيدلية" class="logo-image">
+                    </div>
+                    <div class="pharmacy-info">
+                        <h2>{{ pharmacy.name }}</h2>
+                        <p class="pharmacy-description">{{ pharmacy.description or 'لا يوجد وصف متاح' }}</p>
+                        <div class="pharmacy-meta">
+                            <span class="pharmacy-license">
+                                <i class="fas fa-certificate"></i>
+                                ترخيص رقم: {{ pharmacy.license_number }}
+                            </span>
+                            <span class="pharmacy-status status-{{ pharmacy.status }}">
+                                <i class="fas fa-circle"></i>
+                                {{ pharmacy.status }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pharmacy-rating">
+                    <div class="rating-stars">
+                        {% for i in range(5) %}
+                        {% if i < pharmacy.rating %} <i class="fas fa-star"></i>
+                            {% else %}
+                            <i class="far fa-star"></i>
+                            {% endif %}
+                            {% endfor %}
+                    </div>
+                    <span class="rating-text">{{ pharmacy.rating }}/5</span>
+                    <span class="rating-count">({{ pharmacy.reviews_count or 0 }} تقييم)</span>
+                </div>
+            </div>
+
+            <div class="pharmacy-details">
+                <div class="detail-section">
+                    <h3><i class="fas fa-map-marker-alt"></i> العنوان والموقع</h3>
+                    <div class="detail-content">
+                        <div class="address-info">
+                            <p><strong>العنوان:</strong> {{ pharmacy.address }}</p>
+                            <p><strong>المدينة:</strong> {{ pharmacy.city }}</p>
+                            <p><strong>الرمز البريدي:</strong> {{ pharmacy.postal_code }}</p>
+                        </div>
+                        {% if pharmacy.latitude and pharmacy.longitude %}
+                        <div class="map-container">
+                            <div id="pharmacy-map" class="pharmacy-map"></div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3><i class="fas fa-clock"></i> ساعات العمل</h3>
+                    <div class="detail-content">
+                        <div class="working-hours">
+                            <div class="hours-item">
+                                <span class="day">السبت - الخميس:</span>
+                                <span class="time">{{ pharmacy.working_hours_weekdays or 'غير محدد' }}</span>
+                            </div>
+                            <div class="hours-item">
+                                <span class="day">الجمعة:</span>
+                                <span class="time">{{ pharmacy.working_hours_friday or 'غير محدد' }}</span>
+                            </div>
+                            {% if pharmacy.is_24_hours %}
+                            <div class="hours-item special">
+                                <span class="day">خدمة 24 ساعة:</span>
+                                <span class="time">متاح</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3><i class="fas fa-cogs"></i> الخدمات المتاحة</h3>
+                    <div class="detail-content">
+                        <div class="services-grid">
+                            {% if pharmacy.delivery_available %}
+                            <div class="service-item">
+                                <i class="fas fa-truck"></i>
+                                <span>خدمة التوصيل</span>
+                            </div>
+                            {% endif %}
+                            {% if pharmacy.consultation_available %}
+                            <div class="service-item">
+                                <i class="fas fa-user-md"></i>
+                                <span>الاستشارات الطبية</span>
+                            </div>
+                            {% endif %}
+                            {% if pharmacy.emergency_service %}
+                            <div class="service-item">
+                                <i class="fas fa-ambulance"></i>
+                                <span>خدمة الطوارئ</span>
+                            </div>
+                            {% endif %}
+                            {% if pharmacy.online_ordering %}
+                            <div class="service-item">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span>الطلب الإلكتروني</span>
+                            </div>
+                            {% endif %}
+                            {% if pharmacy.prescription_services %}
+                            <div class="service-item">
+                                <i class="fas fa-prescription-bottle-alt"></i>
+                                <span>خدمات الوصفات الطبية</span>
+                            </div>
+                            {% endif %}
+                            {% if pharmacy.health_products %}
+                            <div class="service-item">
+                                <i class="fas fa-heartbeat"></i>
+                                <span>المنتجات الصحية</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3><i class="fas fa-phone"></i> معلومات التواصل</h3>
+                    <div class="detail-content">
+                        <div class="contact-info">
+                            <div class="contact-item">
+                                <i class="fas fa-phone"></i>
+                                <span>{{ pharmacy.phone }}</span>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>{{ pharmacy.email }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3><i class="fas fa-user-tie"></i> معلومات المدير</h3>
+                    <div class="detail-content">
+                        <div class="manager-info">
+                            <div class="manager-item">
+                                <i class="fas fa-user"></i>
+                                <span>{{ pharmacy.manager_name or 'غير محدد' }}</span>
+                            </div>
+                            {% if pharmacy.manager_phone %}
+                            <div class="manager-item">
+                                <i class="fas fa-phone"></i>
+                                <span>{{ pharmacy.manager_phone }}</span>
+                            </div>
+                            {% endif %}
+                            {% if pharmacy.manager_email %}
+                            <div class="manager-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>{{ pharmacy.manager_email }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pharmacy-sidebar">
+            <div class="quick-actions">
+                <h3><i class="fas fa-bolt"></i> إجراءات سريعة</h3>
+                <div class="action-buttons">
+                    <a href="tel:{{ pharmacy.phone }}" class="btn-action call">
+                        <i class="fas fa-phone"></i> اتصل بالصيدلية
+                    </a>
+                    <a href="mailto:{{ pharmacy.email }}" class="btn-action email">
+                        <i class="fas fa-envelope"></i> أرسل بريد إلكتروني
+                    </a>
+                    {% if pharmacy.delivery_available %}
+                    <button class="btn-action delivery" onclick="requestDelivery()">
+                        <i class="fas fa-truck"></i> طلب توصيل
+                    </button>
+                    {% endif %}
+                    {% if pharmacy.consultation_available %}
+                    <button class="btn-action consultation" onclick="requestConsultation()">
+                        <i class="fas fa-user-md"></i> طلب استشارة
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="pharmacy-stats">
+                <h3><i class="fas fa-chart-bar"></i> إحصائيات</h3>
+                <div class="stats-list">
+                    <div class="stat-item">
+                        <i class="fas fa-star"></i>
+                        <span>التقييم</span>
+                        <span>{{ pharmacy.rating }}/5</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-comments"></i>
+                        <span>التقييمات</span>
+                        <span>{{ pharmacy.reviews_count or 0 }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>الطلبات</span>
+                        <span>{{ pharmacy.orders_count or 0 }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>تاريخ التسجيل</span>
+                        <span>{% if pharmacy.created_at %}{{ pharmacy.created_at.strftime('%Y-%m-%d') }}{% else %}غير محدد{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recent-reviews">
+                <h3><i class="fas fa-comments"></i> آخر التقييمات</h3>
+                <div class="reviews-list">
+                    {% if pharmacy.reviews %}
+                    {% for review in pharmacy.reviews[:3] %}
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div class="reviewer-info">
+                                <span class="reviewer-name">{{ review.user.full_name }}</span>
+                                <div class="review-rating">
+                                    {% for i in range(5) %}
+                                    {% if i < review.rating %} <i class="fas fa-star"></i>
+                                        {% else %}
+                                        <i class="far fa-star"></i>
+                                        {% endif %}
+                                        {% endfor %}
+                                </div>
+                            </div>
+                            <span class="review-date">{% if review.created_at %}{{ review.created_at.strftime('%Y-%m-%d') }}{% else %}غير محدد{% endif %}</span>
+                        </div>
+                        <p class="review-text">{{ review.comment }}</p>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="no-reviews">لا توجد تقييمات بعد</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .pharmacy-view-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 30px;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-info h1 {
+        margin: 0 0 10px 0;
+        color: var(--text-primary);
+        font-size: 2.2em;
+        font-weight: 700;
+    }
+
+    .header-info p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 1.1em;
+    }
+
+    .header-info i {
+        margin-left: 10px;
+        color: var(--primary-color);
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 15px;
+    }
+
+    .pharmacy-content {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 30px;
+        align-items: start;
+    }
+
+    .pharmacy-main {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .pharmacy-overview {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .pharmacy-header {
+        display: flex;
+        gap: 25px;
+        align-items: flex-start;
+        margin-bottom: 25px;
+    }
+
+    .pharmacy-logo {
+        flex-shrink: 0;
+    }
+
+    .logo-image {
+        width: 120px;
+        height: 120px;
+        border-radius: 15px;
+        object-fit: cover;
+        border: 3px solid var(--primary-color);
+        box-shadow: var(--shadow-md);
+    }
+
+    .pharmacy-info h2 {
+        margin: 0 0 15px 0;
+        color: var(--text-primary);
+        font-size: 2em;
+        font-weight: 600;
+    }
+
+    .pharmacy-description {
+        margin: 0 0 20px 0;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        font-size: 1.1em;
+    }
+
+    .pharmacy-meta {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .pharmacy-meta span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 15px;
+        background: var(--bg-secondary);
+        border-radius: 20px;
+        font-size: 0.9em;
+        color: var(--text-primary);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .pharmacy-meta i {
+        color: var(--primary-color);
+    }
+
+    .status-active {
+        background: rgba(40, 167, 69, 0.2) !important;
+        color: #28a745 !important;
+    }
+
+    .status-inactive {
+        background: rgba(108, 117, 125, 0.2) !important;
+        color: #6c757d !important;
+    }
+
+    .status-pending {
+        background: rgba(255, 193, 7, 0.2) !important;
+        color: #ffc107 !important;
+    }
+
+    .pharmacy-rating {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .rating-stars {
+        display: flex;
+        gap: 3px;
+    }
+
+    .rating-stars i {
+        color: #ffc107;
+        font-size: 1.2em;
+    }
+
+    .rating-text {
+        color: var(--text-primary);
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
+    .rating-count {
+        color: var(--text-secondary);
+        font-size: 0.9em;
+    }
+
+    .pharmacy-details {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .detail-section {
+        margin-bottom: 40px;
+        padding-bottom: 30px;
+        border-bottom: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .detail-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .detail-section h3 {
+        margin: 0 0 25px 0;
+        color: var(--text-primary);
+        font-size: 1.4em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .detail-section h3 i {
+        color: var(--primary-color);
+    }
+
+    .address-info p {
+        margin: 0 0 10px 0;
+        color: var(--text-primary);
+        font-size: 1em;
+    }
+
+    .address-info strong {
+        color: var(--text-secondary);
+    }
+
+    .map-container {
+        margin-top: 20px;
+    }
+
+    .pharmacy-map {
+        width: 100%;
+        height: 300px;
+        border-radius: 10px;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .working-hours {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .hours-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        background: var(--bg-secondary);
+        border-radius: 10px;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .hours-item.special {
+        background: rgba(0, 191, 166, 0.1);
+        border-color: var(--primary-color);
+    }
+
+    .hours-item .day {
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .hours-item .time {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .services-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+
+    .service-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px 20px;
+        background: var(--bg-secondary);
+        border-radius: 10px;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .service-item:hover {
+        background: var(--bg-card);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .service-item i {
+        color: var(--primary-color);
+        font-size: 1.2em;
+    }
+
+    .service-item span {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    .contact-info,
+    .manager-info {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .contact-item,
+    .manager-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px 20px;
+        background: var(--bg-secondary);
+        border-radius: 10px;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .contact-item i,
+    .manager-item i {
+        color: var(--primary-color);
+        font-size: 1.2em;
+        width: 20px;
+    }
+
+    .contact-item span,
+    .manager-item span {
+        color: var(--text-primary);
+        font-size: 1em;
+    }
+
+    .pharmacy-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .quick-actions,
+    .pharmacy-stats,
+    .recent-reviews {
+        background: var(--bg-glass);
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .quick-actions h3,
+    .pharmacy-stats h3,
+    .recent-reviews h3 {
+        margin: 0 0 20px 0;
+        color: var(--text-primary);
+        font-size: 1.2em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .quick-actions h3 i,
+    .pharmacy-stats h3 i,
+    .recent-reviews h3 i {
+        color: var(--primary-color);
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn-action {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.9em;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-action.call {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-action.call:hover {
+        background: #218838;
+        transform: translateY(-2px);
+    }
+
+    .btn-action.email {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .btn-action.email:hover {
+        background: #138496;
+        transform: translateY(-2px);
+    }
+
+    .btn-action.delivery {
+        background: #ffc107;
+        color: #212529;
+    }
+
+    .btn-action.delivery:hover {
+        background: #e0a800;
+        transform: translateY(-2px);
+    }
+
+    .btn-action.consultation {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-action.consultation:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+    }
+
+    .stats-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 15px;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .stat-item i {
+        color: var(--primary-color);
+        margin-left: 10px;
+    }
+
+    .stat-item span:first-of-type {
+        color: var(--text-secondary);
+        font-size: 0.9em;
+    }
+
+    .stat-item span:last-of-type {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .reviews-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .review-item {
+        padding: 15px;
+        background: var(--bg-secondary);
+        border-radius: 10px;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .reviewer-name {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 0.9em;
+    }
+
+    .review-rating {
+        display: flex;
+        gap: 2px;
+        margin-top: 5px;
+    }
+
+    .review-rating i {
+        color: #ffc107;
+        font-size: 0.8em;
+    }
+
+    .review-date {
+        color: var(--text-secondary);
+        font-size: 0.8em;
+    }
+
+    .review-text {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 0.9em;
+        line-height: 1.5;
+    }
+
+    .no-reviews {
+        text-align: center;
+        color: var(--text-secondary);
+        font-style: italic;
+        padding: 20px;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        padding: 12px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.9em;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        border: 2px solid rgba(0, 191, 166, 0.3);
+    }
+
+    .btn-secondary:hover {
+        background: var(--bg-card);
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .pharmacy-content {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .header-content {
+            flex-direction: column;
+            gap: 20px;
+            text-align: center;
+        }
+
+        .header-actions {
+            justify-content: center;
+        }
+
+        .pharmacy-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .pharmacy-meta {
+            justify-content: center;
+        }
+
+        .services-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    function requestDelivery() {
+        if (confirm('هل تريد طلب خدمة التوصيل من هذه الصيدلية؟')) {
+            // Implement delivery request functionality
+            window.location.href = '/delivery/request?pharmacy_id={{ pharmacy.id }}';
+        }
+    }
+
+    function requestConsultation() {
+        if (confirm('هل تريد طلب استشارة من هذه الصيدلية؟')) {
+            // Implement consultation request functionality
+            window.location.href = '/consultation/request?pharmacy_id={{ pharmacy.id }}';
+        }
+    }
+
+    // Initialize map if coordinates are available
+    {% if pharmacy.latitude and pharmacy.longitude %}
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize map here using your preferred map service
+        // This is a placeholder for map initialization
+        const mapElement = document.getElementById('pharmacy-map');
+        if (mapElement) {
+            mapElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">خريطة الموقع<br>خط العرض: {{ pharmacy.latitude }}<br>خط الطول: {{ pharmacy.longitude }}</div>';
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,1483 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>مرحباً {{ current_user.full_name }}</h1>
+        <p>إدارة أدويتك والتذكيرات</p>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- التذكيرات القادمة -->
+        <div class="dashboard-card reminders-card">
+            <div class="card-header">
+                <h3><i class="fas fa-bell"></i> التذكيرات القادمة</h3>
+                <span class="card-count">{{ reminders|length }}</span>
+            </div>
+            <div class="card-content">
+                {% if reminders %}
+                <div class="reminders-list">
+                    {% for reminder in reminders %}
+                    <div class="reminder-item" data-dose-id="{{ reminder.medication_dose_id }}">
+                        <div class="reminder-info">
+                            <div class="medication-name">{{ reminder.medication_dose.medication.name }}</div>
+                            <div class="dose-info">
+                                <span class="dosage">{{ reminder.medication_dose.medication.dosage }}</span>
+                                <span class="time">{% if reminder.reminder_time %}{{ reminder.reminder_time.strftime('%H:%M') }}{% else %}غير محدد{% endif %}</span>
+                            </div>
+                        </div>
+                        <div class="reminder-actions">
+                            <button class="btn btn-sm btn-success"
+                                onclick="markDoseAsTaken({{ reminder.medication_dose_id }})">
+                                تم التناول
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-check-circle"></i></div>
+                    <p>لا توجد تذكيرات قادمة</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- الأدوية النشطة -->
+        <div class="dashboard-card medications-card">
+            <div class="card-header">
+                <h3><i class="fas fa-pills"></i> أدويتي النشطة</h3>
+                <a href="{{ url_for('medications') }}" class="card-link">عرض الكل</a>
+            </div>
+            <div class="card-content">
+                {% if medications %}
+                <div class="medications-list">
+                    {% for medication in medications[:5] %}
+                    <div class="medication-item">
+                        <div class="medication-info">
+                            <div class="medication-name">{{ medication.name }}</div>
+                            <div class="medication-details">
+                                <span class="form">{{ medication.form }}</span>
+                                <span class="dosage">{{ medication.dosage }}</span>
+                            </div>
+                            <div class="medication-frequency">{{ medication.frequency }}</div>
+                        </div>
+                        <div class="medication-status">
+                            {% if medication.get_remaining_days() %}
+                            <span class="remaining-days">{{ medication.get_remaining_days() }} يوم متبقي</span>
+                            {% else %}
+                            <span class="status-active">نشط</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-pills"></i></div>
+                    <p>لا توجد أدوية مسجلة</p>
+                    <a href="{{ url_for('add_medication') }}" class="btn btn-primary">إضافة دواء</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- التقويم -->
+        <div class="dashboard-card calendar-card">
+            <div class="card-header">
+                <h3><i class="fas fa-calendar-alt"></i> تقويم الأدوية</h3>
+                <div class="calendar-nav">
+                    <button class="btn btn-sm" onclick="previousMonth()">‹</button>
+                    <span class="current-month" id="currentMonth"></span>
+                    <button class="btn btn-sm" onclick="nextMonth()">›</button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="calendar" id="medicationCalendar">
+                    <!-- سيتم ملء التقويم بواسطة JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- الإحصائيات السريعة -->
+        <div class="dashboard-card stats-card">
+            <div class="card-header">
+                <h3><i class="fas fa-chart-bar"></i> إحصائيات سريعة</h3>
+            </div>
+            <div class="card-content">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">{{ medications|length }}</div>
+                        <div class="stat-label">أدوية نشطة</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ reminders|length }}</div>
+                        <div class="stat-label">تذكيرات اليوم</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">95%</div>
+                        <div class="stat-label">معدل الالتزام</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">7</div>
+                        <div class="stat-label">أيام متتالية</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الإجراءات السريعة -->
+        <div class="dashboard-card actions-card">
+            <div class="card-header">
+                <h3><i class="fas fa-bolt"></i> إجراءات سريعة</h3>
+            </div>
+            <div class="card-content">
+                <div class="quick-actions">
+                    <a href="{{ url_for('add_medication') }}" class="quick-action">
+                        <div class="action-icon"><i class="fas fa-plus"></i></div>
+                        <div class="action-text">إضافة دواء</div>
+                    </a>
+                    <a href="{{ url_for('add_consultation') }}" class="quick-action">
+                        <div class="action-icon"><i class="fas fa-comments"></i></div>
+                        <div class="action-text">استشارة صيدلي</div>
+                    </a>
+                    <a href="{{ url_for('generate_report') }}" class="quick-action">
+                        <div class="action-icon"><i class="fas fa-file-alt"></i></div>
+                        <div class="action-text">تقرير شهري</div>
+                    </a>
+                    <a href="{{ url_for('add_rating') }}" class="quick-action">
+                        <div class="action-icon"><i class="fas fa-star"></i></div>
+                        <div class="action-text">تقييم دواء</div>
+                    </a>
+                    <button class="quick-action" onclick="openNotificationModal()" type="button" style="border: none; cursor: pointer; font-family: var(--font-family);">
+                        <div class="action-icon"><i class="fas fa-bell"></i></div>
+                        <div class="action-text">محاكاة إشعار</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- الاستشارات الأخيرة -->
+        <div class="dashboard-card consultations-card">
+            <div class="card-header">
+                <h3><i class="fas fa-comments"></i> الاستشارات الأخيرة</h3>
+                <a href="{{ url_for('consultations') }}" class="card-link">عرض الكل</a>
+            </div>
+            <div class="card-content">
+                <div class="consultations-list">
+                    {% if consultations %}
+                        {% for consultation in consultations[:3] %}
+                        <div class="consultation-item">
+                            <div class="consultation-info">
+                                <div class="consultation-subject">{{ consultation.subject }}</div>
+                                <div class="consultation-date">{% if consultation.created_at %}{{ consultation.created_at.strftime('%Y-%m-%d') }}{% else %}غير محدد{% endif %}</div>
+                            </div>
+                            <div class="consultation-status status-{{ consultation.status }}">
+                                {% if consultation.status == 'replied' %}تم الرد
+                                {% elif consultation.status == 'pending' %}في الانتظار
+                                {% else %}مغلقة{% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-icon"><i class="fas fa-comments"></i></div>
+                            <p>لا توجد استشارات حديثة</p>
+                            <a href="{{ url_for('add_consultation') }}" class="btn btn-primary">إرسال استشارة</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- اختيار الطبيب -->
+        {% if current_user.role == 'patient' %}
+        <div class="dashboard-card doctor-selection-card">
+            <div class="card-header">
+                <h3><i class="fas fa-user-md"></i> اختيار الطبيب</h3>
+            </div>
+            <div class="card-content">
+                {% if current_doctor %}
+                <div class="current-doctor-info">
+                    <div class="doctor-badge">
+                        <i class="fas fa-check-circle"></i>
+                        <span>طبيبك الحالي: <strong>{{ current_doctor.full_name }}</strong></span>
+                    </div>
+                </div>
+                {% endif %}
+                {% if available_doctors and available_doctors|length > 0 %}
+                <div class="doctors-grid">
+                    {% for doctor in available_doctors[:4] %}
+                    <div class="doctor-card {% if current_doctor and current_doctor.id == doctor.id %}selected{% endif %}" 
+                         onclick="selectDoctor({{ doctor.id }})">
+                        <div class="doctor-avatar">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <div class="doctor-info">
+                            <h4>{{ doctor.full_name }}</h4>
+                            {% if doctor.phone %}
+                            <p><i class="fas fa-phone"></i> {{ doctor.phone }}</p>
+                            {% endif %}
+                        </div>
+                        {% if current_doctor and current_doctor.id == doctor.id %}
+                        <div class="doctor-selected">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if available_doctors|length > 4 %}
+                <p class="more-doctors-note">و {{ available_doctors|length - 4 }} أطباء آخرين متاحين</p>
+                {% endif %}
+                {% else %}
+                <div class="empty-state">
+                    <p>لا توجد أطباء متاحين حالياً</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- نافذة محاكاة الإشعار -->
+<div id="notificationModal" class="notification-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-bell"></i> محاكاة إرسال إشعار</h2>
+        </div>
+        <form id="notificationForm">
+            <div class="form-group">
+                <label>عنوان الإشعار:</label>
+                <input type="text" id="notificationTitle" name="title" value="إشعار تجريبي" required>
+            </div>
+            <div class="form-group">
+                <label>الرسالة:</label>
+                <textarea id="notificationMessage" name="message" required>هذا إشعار تجريبي لمحاكاة الإشعارات</textarea>
+            </div>
+            <div class="form-group">
+                <label>نوع الإشعار:</label>
+                <select id="notificationType" name="type">
+                    <option value="info">معلومات</option>
+                    <option value="medication">دواء</option>
+                    <option value="appointment">موعد</option>
+                    <option value="warning">تحذير</option>
+                    <option value="success">نجاح</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>وقت ظهور الإشعار:</label>
+                <div style="display: flex; gap: var(--spacing-md); align-items: center; margin-bottom: var(--spacing-sm);">
+                    <select id="timeUnit" name="time_unit" style="flex: 0 0 auto; width: 120px;">
+                        <option value="minutes">دقائق</option>
+                        <option value="hours">ساعات</option>
+                        <option value="days">أيام</option>
+                    </select>
+                    <input type="number" id="delayValue" name="delay_value" value="1" min="1" style="flex: 1;">
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: var(--spacing-sm); margin-top: var(--spacing-sm);">
+                    <button type="button" class="time-preset-btn" data-value="5" data-unit="minutes">5 دقائق</button>
+                    <button type="button" class="time-preset-btn" data-value="15" data-unit="minutes">15 دقيقة</button>
+                    <button type="button" class="time-preset-btn" data-value="30" data-unit="minutes">نصف ساعة</button>
+                    <button type="button" class="time-preset-btn" data-value="1" data-unit="hours">ساعة</button>
+                    <button type="button" class="time-preset-btn" data-value="2" data-unit="hours">ساعتين</button>
+                    <button type="button" class="time-preset-btn" data-value="4" data-unit="hours">4 ساعات</button>
+                    <button type="button" class="time-preset-btn" data-value="8" data-unit="hours">8 ساعات</button>
+                    <button type="button" class="time-preset-btn" data-value="12" data-unit="hours">12 ساعة</button>
+                    <button type="button" class="time-preset-btn" data-value="1" data-unit="days">يوم كامل</button>
+                    <button type="button" class="time-preset-btn" data-value="2" data-unit="days">يومين</button>
+                    <button type="button" class="time-preset-btn" data-value="7" data-unit="days">أسبوع</button>
+                    <button type="button" class="time-preset-btn" data-value="30" data-unit="days">شهر</button>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-modal btn-modal-secondary" onclick="closeNotificationModal()">إلغاء</button>
+                <button type="submit" class="btn-modal btn-modal-primary">جدولة الإشعار</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .notification-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 23, 42, 0.9);
+        backdrop-filter: blur(10px);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+        font-family: var(--font-family);
+    }
+
+    .notification-modal.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: var(--bg-glass);
+        backdrop-filter: blur(20px);
+        padding: var(--spacing-xl);
+        border-radius: var(--border-radius-lg);
+        max-width: 550px;
+        width: 90%;
+        box-shadow: var(--shadow-xl), var(--shadow-primary);
+        border: 1px solid rgba(0, 191, 166, 0.3);
+        animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .modal-header {
+        margin-bottom: var(--spacing-lg);
+        padding-bottom: var(--spacing-md);
+        border-bottom: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        color: var(--text-primary);
+        font-family: var(--font-family);
+        font-weight: 600;
+        font-size: var(--font-size-xl);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .modal-header h2 i {
+        color: var(--primary-color);
+    }
+
+    .form-group {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: var(--spacing-sm);
+        color: var(--text-primary);
+        font-family: var(--font-family);
+        font-weight: 500;
+        font-size: var(--font-size-sm);
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: var(--spacing-md);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        border-radius: var(--border-radius);
+        font-size: var(--font-size-base);
+        font-family: var(--font-family);
+        box-sizing: border-box;
+        background: var(--bg-glass-hover);
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-primary);
+        background: var(--bg-card);
+    }
+
+    .form-group textarea {
+        min-height: 120px;
+        resize: vertical;
+        font-family: var(--font-family);
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+        color: var(--text-muted);
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: var(--spacing-md);
+        justify-content: flex-end;
+        margin-top: var(--spacing-xl);
+        padding-top: var(--spacing-lg);
+        border-top: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .btn-modal {
+        padding: var(--spacing-md) var(--spacing-xl);
+        border: none;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-size: var(--font-size-base);
+        font-family: var(--font-family);
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-modal-primary {
+        background: linear-gradient(135deg, var(--primary-color), #00A693);
+        color: white;
+        box-shadow: var(--shadow-primary);
+    }
+
+    .btn-modal-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg), var(--shadow-primary);
+    }
+
+    .btn-modal-secondary {
+        background: var(--bg-glass-hover);
+        color: var(--text-secondary);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .btn-modal-secondary:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+        border-color: var(--primary-color);
+    }
+
+    .time-preset-btn {
+        padding: var(--spacing-xs) var(--spacing-md);
+        background: var(--bg-glass-hover);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        border-radius: var(--border-radius);
+        color: var(--text-secondary);
+        font-family: var(--font-family);
+        font-size: var(--font-size-sm);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .time-preset-btn:hover {
+        background: var(--bg-card);
+        border-color: var(--primary-color);
+        color: var(--text-primary);
+        transform: translateY(-1px);
+    }
+
+    .time-preset-btn.active {
+        background: linear-gradient(135deg, var(--primary-color), #00A693);
+        border-color: var(--primary-color);
+        color: white;
+        box-shadow: var(--shadow-primary);
+    }
+</style>
+
+<script>
+    function openNotificationModal() {
+        document.getElementById('notificationModal').classList.add('active');
+    }
+
+    function closeNotificationModal() {
+        document.getElementById('notificationModal').classList.remove('active');
+        document.getElementById('notificationForm').reset();
+    }
+
+    // معالجة الأزرار السريعة للوقت
+    document.querySelectorAll('.time-preset-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // إزالة التحديد من جميع الأزرار
+            document.querySelectorAll('.time-preset-btn').forEach(b => b.classList.remove('active'));
+            // تحديد الزر المضغوط
+            this.classList.add('active');
+            // تحديث القيم
+            document.getElementById('delayValue').value = this.dataset.value;
+            document.getElementById('timeUnit').value = this.dataset.unit;
+        });
+    });
+
+    function calculateDelayMinutes(value, unit) {
+        if (unit === 'minutes') {
+            return value;
+        } else if (unit === 'hours') {
+            return value * 60;
+        } else if (unit === 'days') {
+            return value * 24 * 60;
+        }
+        return value;
+    }
+
+    function formatDelayText(value, unit) {
+        if (unit === 'minutes') {
+            return value === 1 ? 'دقيقة' : value + ' دقائق';
+        } else if (unit === 'hours') {
+            return value === 1 ? 'ساعة' : value + ' ساعات';
+        } else if (unit === 'days') {
+            return value === 1 ? 'يوم' : value + ' أيام';
+        }
+        return value;
+    }
+
+    document.getElementById('notificationForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const delayValue = parseInt(document.getElementById('delayValue').value);
+        const timeUnit = document.getElementById('timeUnit').value;
+        const delayMinutes = calculateDelayMinutes(delayValue, timeUnit);
+        
+        const formData = {
+            patient_id: {{ current_user.id }},
+            title: document.getElementById('notificationTitle').value,
+            message: document.getElementById('notificationMessage').value,
+            type: document.getElementById('notificationType').value,
+            delay_minutes: delayMinutes
+        };
+
+        try {
+            const response = await fetch('/api/notifications/schedule', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                const delayText = formatDelayText(delayValue, timeUnit);
+                alert('تم جدولة الإشعار بنجاح! سيظهر بعد ' + delayText);
+                closeNotificationModal();
+                startNotificationChecker(delayMinutes);
+            } else {
+                alert('خطأ: ' + (data.error || 'فشل جدولة الإشعار'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء جدولة الإشعار');
+        }
+    });
+
+    let notificationCheckInterval = null;
+
+    function startNotificationChecker(delayMinutes) {
+        if (notificationCheckInterval) {
+            clearInterval(notificationCheckInterval);
+        }
+
+        const checkTime = delayMinutes * 60 * 1000;
+        
+        notificationCheckInterval = setInterval(async () => {
+            try {
+                await fetch('/api/notifications/check-scheduled', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+            } catch (error) {
+                console.error('Error checking notifications:', error);
+            }
+        }, 5000);
+
+        setTimeout(() => {
+            checkAndShowNotification();
+        }, checkTime);
+    }
+
+    async function checkAndShowNotification() {
+        try {
+            await fetch('/api/notifications/check-scheduled', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            const response = await fetch('/api/notifications');
+            const data = await response.json();
+            
+            if (data.length > 0) {
+                const latestNotification = data[0];
+                showNotificationBadge(latestNotification);
+            }
+        } catch (error) {
+            console.error('Error checking notifications:', error);
+        }
+    }
+
+    function showNotificationBadge(notification = null) {
+        const title = notification ? notification.title : 'إشعار جديد';
+        const message = notification ? notification.body : 'لديك إشعار جديد';
+        alert(title + '\n\n' + message);
+    }
+
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
+    document.getElementById('notificationModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeNotificationModal();
+        }
+    });
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // تهيئة التقويم
+        initializeCalendar();
+
+        // تحديث التذكيرات كل دقيقة
+        setInterval(updateReminders, 60000);
+    });
+
+    function initializeCalendar() {
+        const calendarElement = document.getElementById('medicationCalendar');
+        const currentMonthElement = document.getElementById('currentMonth');
+
+        let currentDate = new Date();
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            // تحديث عنوان الشهر
+            const monthNames = [
+                'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+                'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+            ];
+            currentMonthElement.textContent = `${monthNames[month]} ${year}`;
+
+            // إنشاء التقويم
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDay = firstDay.getDay();
+
+            let calendarHTML = '<div class="calendar-header">';
+            const dayNames = ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
+            dayNames.forEach(day => {
+                calendarHTML += `<div class="calendar-day-name">${day}</div>`;
+            });
+            calendarHTML += '</div><div class="calendar-body">';
+
+            // إضافة الأيام الفارغة في بداية الشهر
+            for (let i = 0; i < startingDay; i++) {
+                calendarHTML += '<div class="calendar-day empty"></div>';
+            }
+
+            // إضافة أيام الشهر
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayDate = new Date(year, month, day);
+                const isToday = dayDate.toDateString() === new Date().toDateString();
+                const hasMedications = checkDayForMedications(dayDate);
+
+                calendarHTML += `
+                <div class="calendar-day ${isToday ? 'today' : ''} ${hasMedications ? 'has-medications' : ''}" 
+                     data-date="${dayDate.toISOString().split('T')[0]}">
+                    <span class="day-number">${day}</span>
+                    ${hasMedications ? '<div class="medication-indicator"></div>' : ''}
+                </div>
+            `;
+            }
+
+            calendarHTML += '</div>';
+            calendarElement.innerHTML = calendarHTML;
+
+            // إضافة مستمعي الأحداث للأيام
+            calendarElement.querySelectorAll('.calendar-day').forEach(dayElement => {
+                dayElement.addEventListener('click', function () {
+                    const date = this.dataset.date;
+                    if (date) {
+                        showDayMedications(date);
+                    }
+                });
+            });
+        }
+
+        function checkDayForMedications(date) {
+            // هذه دالة وهمية - في التطبيق الحقيقي، ستتحقق من قاعدة البيانات
+            return Math.random() > 0.7; // 30% احتمال وجود أدوية في اليوم
+        }
+
+        function showDayMedications(date) {
+            // إظهار الأدوية المقررة لهذا اليوم
+            showToast(`الأدوية المقررة لـ ${formatDate(date)}`, 'info');
+        }
+
+        // دوال التنقل بين الشهور
+        window.previousMonth = function () {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        };
+
+        window.nextMonth = function () {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        };
+
+        // رسم التقويم الأول
+        renderCalendar();
+    }
+
+    function updateReminders() {
+        fetch('/api/reminders')
+            .then(response => response.json())
+            .then(reminders => {
+                updateRemindersUI(reminders);
+            })
+            .catch(error => {
+                console.error('خطأ في تحديث التذكيرات:', error);
+            });
+    }
+
+    function updateRemindersUI(reminders) {
+        const remindersList = document.querySelector('.reminders-list');
+        if (!remindersList) return;
+
+        if (reminders.length === 0) {
+            remindersList.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">✅</div>
+                <p>لا توجد تذكيرات قادمة</p>
+            </div>
+        `;
+            return;
+        }
+
+        remindersList.innerHTML = reminders.map(reminder => `
+        <div class="reminder-item" data-dose-id="${reminder.id}">
+            <div class="reminder-info">
+                <div class="medication-name">${reminder.medication_name}</div>
+                <div class="dose-info">
+                    <span class="dosage">${reminder.dosage}</span>
+                    <span class="time">${reminder.time}</span>
+                </div>
+            </div>
+            <div class="reminder-actions">
+                <button class="btn btn-sm btn-success" onclick="markDoseAsTaken(${reminder.id})">
+                    تم التناول
+                </button>
+            </div>
+        </div>
+    `).join('');
+    }
+
+    function loadRecentConsultations() {
+        // الاستشارات موجودة بالفعل في الصفحة من الـ backend
+        // لا حاجة لتحميلها عبر API
+        return;
+    }
+
+    function updateConsultationsUI(consultations) {
+        const consultationsList = document.querySelector('.consultations-list');
+        if (!consultationsList) return;
+
+        if (consultations.length === 0) {
+            consultationsList.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">💬</div>
+                <p>لا توجد استشارات حديثة</p>
+                <a href="/consultations/add" class="btn btn-primary">إرسال استشارة</a>
+            </div>
+        `;
+            return;
+        }
+
+        consultationsList.innerHTML = consultations.map(consultation => `
+        <div class="consultation-item">
+            <div class="consultation-info">
+                <div class="consultation-subject">${consultation.subject}</div>
+                <div class="consultation-date">${formatDate(consultation.created_at)}</div>
+            </div>
+            <div class="consultation-status status-${consultation.status}">
+                ${consultation.status === 'replied' ? 'تم الرد' :
+                consultation.status === 'pending' ? 'في الانتظار' : 'مغلقة'}
+            </div>
+        </div>
+    `).join('');
+    }
+
+    // دالة اختيار الطبيب
+    function selectDoctor(doctorId) {
+        if (confirm('هل تريد اختيار هذا الطبيب كطبيبك الخاص؟')) {
+            fetch('/select-doctor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({doctor_id: doctorId})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('تم اختيار الطبيب بنجاح', 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    showToast(data.message || 'حدث خطأ في اختيار الطبيب', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('خطأ:', error);
+                showToast('حدث خطأ في الاتصال', 'error');
+            });
+        }
+    }
+
+    // دالة تسجيل تناول الجرعة
+    function markDoseAsTaken(doseId) {
+        if (confirm('هل تأكدت من تناول الجرعة؟')) {
+            fetch(`/api/take-dose/${doseId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('تم تسجيل تناول الجرعة بنجاح', 'success');
+                        // تحديث واجهة المستخدم
+                        const reminderItem = document.querySelector(`[data-dose-id="${doseId}"]`);
+                        if (reminderItem) {
+                            reminderItem.classList.add('taken');
+                            reminderItem.querySelector('.reminder-actions').innerHTML =
+                                '<span class="taken-status"><i class="fas fa-check-circle"></i> تم التناول</span>';
+                        }
+                        // تحديث التذكيرات
+                        updateReminders();
+                    } else {
+                        showToast('حدث خطأ في تسجيل الجرعة', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('خطأ:', error);
+                    showToast('حدث خطأ في الاتصال', 'error');
+                });
+        }
+    }
+</script>
+
+<style>
+    .dashboard-container {
+        max-width: 100%;
+        margin: 0;
+        padding: var(--spacing-xl);
+        background: var(--bg-gradient);
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    .dashboard-container::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at 20% 80%, rgba(0, 191, 166, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(79, 195, 247, 0.1) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .dashboard-header {
+        text-align: center;
+        margin-bottom: var(--spacing-2xl);
+    }
+
+    .dashboard-header h1 {
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-sm);
+        background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .dashboard-header p {
+        color: var(--text-secondary);
+        font-size: var(--font-size-lg);
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: var(--spacing-lg);
+        max-width: 100%;
+        align-items: start;
+    }
+
+    .dashboard-card {
+        background: var(--bg-glass);
+        -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(20px);
+        border-radius: var(--border-radius-lg);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .dashboard-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .dashboard-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg), var(--shadow-primary);
+        border-color: var(--primary-color);
+    }
+
+    .dashboard-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--spacing-lg);
+        border-bottom: 1px solid rgba(0, 191, 166, 0.2);
+        background: var(--bg-glass-hover);
+    }
+
+    .card-header h3 {
+        margin: 0;
+        color: var(--text-primary);
+    }
+
+    .card-count {
+        background: linear-gradient(135deg, var(--primary-color), #00A693);
+        color: white;
+        padding: var(--spacing-xs) var(--spacing-sm);
+        border-radius: var(--border-radius);
+        font-size: var(--font-size-sm);
+        font-weight: 600;
+        box-shadow: var(--shadow-primary);
+    }
+
+    .card-link {
+        color: var(--primary-color);
+        font-size: var(--font-size-sm);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .card-link:hover {
+        color: var(--accent-color);
+        text-decoration: underline;
+    }
+
+    .card-content {
+        padding: var(--spacing-lg);
+    }
+
+    .reminders-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .reminder-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--spacing-md);
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .reminder-item:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-primary);
+    }
+
+    .reminder-item.taken {
+        opacity: 0.6;
+        background: rgba(102, 187, 106, 0.1);
+        border-color: var(--success-color);
+    }
+
+    .medication-name {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .dose-info {
+        display: flex;
+        gap: var(--spacing-md);
+        font-size: var(--font-size-sm);
+        color: var(--text-secondary);
+    }
+
+    .time {
+        color: var(--primary-color);
+        font-weight: 500;
+    }
+
+    .medications-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .medication-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--spacing-md);
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .medication-item:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-primary);
+    }
+
+    .medication-details {
+        display: flex;
+        gap: var(--spacing-sm);
+        font-size: var(--font-size-sm);
+        color: var(--text-secondary);
+        margin: var(--spacing-xs) 0;
+    }
+
+    .medication-frequency {
+        font-size: var(--font-size-sm);
+        color: var(--primary-color);
+    }
+
+    .remaining-days {
+        color: var(--warning-color);
+        font-weight: 500;
+    }
+
+    .status-active {
+        color: var(--success-color);
+        font-weight: 500;
+    }
+
+    .calendar-nav {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+
+    .current-month {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .calendar {
+        font-size: var(--font-size-sm);
+    }
+
+    .calendar-header {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: var(--spacing-xs);
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .calendar-day-name {
+        text-align: center;
+        font-weight: 600;
+        color: var(--text-secondary);
+        padding: var(--spacing-sm);
+    }
+
+    .calendar-body {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: var(--spacing-xs);
+    }
+
+    .calendar-day {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        background: var(--bg-glass-hover);
+        border: 1px solid rgba(0, 191, 166, 0.1);
+    }
+
+    .calendar-day:hover {
+        background: var(--bg-glass);
+        border-color: var(--primary-color);
+    }
+
+    .calendar-day.today {
+        background: linear-gradient(135deg, var(--primary-color), #00A693);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .calendar-day.has-medications::after {
+        content: '';
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        width: 6px;
+        height: 6px;
+        background-color: var(--accent-color);
+        border-radius: 50%;
+    }
+
+    .day-number {
+        font-weight: 500;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-lg);
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: var(--spacing-md);
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .stat-item:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-primary);
+    }
+
+    .stat-value {
+        font-size: var(--font-size-2xl);
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .stat-label {
+        font-size: var(--font-size-sm);
+        color: var(--text-secondary);
+    }
+
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-md);
+    }
+
+    .quick-action {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: var(--spacing-lg);
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        text-decoration: none;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .quick-action:hover {
+        background: var(--bg-glass);
+        transform: translateY(-2px);
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-primary);
+    }
+
+    .action-icon {
+        font-size: var(--font-size-2xl);
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .action-text {
+        font-size: var(--font-size-sm);
+        font-weight: 500;
+    }
+
+    .consultations-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .consultation-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--spacing-md);
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .consultation-item:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-primary);
+    }
+
+    .consultation-subject {
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .consultation-date {
+        font-size: var(--font-size-sm);
+        color: var(--text-secondary);
+    }
+
+    .consultation-status {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        border-radius: var(--border-radius);
+        font-size: var(--font-size-sm);
+        font-weight: 500;
+    }
+
+    .status-pending {
+        background: var(--warning-color);
+        color: white;
+    }
+
+    .status-replied {
+        background: var(--success-color);
+        color: white;
+    }
+
+    .status-closed {
+        background: var(--text-muted);
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: var(--spacing-xl);
+        color: var(--text-secondary);
+    }
+
+    .empty-icon {
+        font-size: var(--font-size-4xl);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .taken-status {
+        color: var(--success-color);
+        font-weight: 500;
+    }
+
+    @media (max-width: 1200px) {
+        .dashboard-grid {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--spacing-md);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding: var(--spacing-md);
+        }
+
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+            gap: var(--spacing-sm);
+        }
+
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .dashboard-container {
+            padding: var(--spacing-sm);
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.5em;
+        }
+
+        .dashboard-card {
+            padding: var(--spacing-md);
+        }
+    }
+
+    /* Doctor Selection Styles */
+    .doctor-selection-card {
+        grid-column: 1 / -1;
+    }
+
+    .current-doctor-info {
+        margin-bottom: var(--spacing-lg);
+        padding: var(--spacing-md);
+        background: rgba(0, 191, 166, 0.1);
+        border-radius: var(--border-radius);
+        border: 1px solid var(--primary-color);
+    }
+
+    .doctor-badge {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        color: var(--primary-color);
+        font-weight: 500;
+    }
+
+    .doctor-badge i {
+        font-size: 1.2em;
+    }
+
+    .doctors-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--spacing-md);
+    }
+
+    .doctor-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: var(--spacing-lg);
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        border: 2px solid rgba(0, 191, 166, 0.2);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .doctor-card:hover {
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-primary);
+    }
+
+    .doctor-card.selected {
+        border-color: var(--primary-color);
+        background: rgba(0, 191, 166, 0.15);
+    }
+
+    .doctor-card.selected::before {
+        content: '';
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: 20px;
+        height: 20px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .doctor-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5em;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .doctor-info {
+        text-align: center;
+    }
+
+    .doctor-info h4 {
+        margin: 0 0 var(--spacing-xs) 0;
+        color: var(--text-primary);
+        font-size: 1em;
+    }
+
+    .doctor-info p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+    }
+
+    .doctor-selected {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 24px;
+        height: 24px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+
+    .more-doctors-note {
+        text-align: center;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+        margin-top: var(--spacing-md);
+    }
+</style>
+{% endblock %}

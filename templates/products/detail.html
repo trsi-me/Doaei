@@ -1,0 +1,647 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - دوائي{% endblock %}
+
+{% block content %}
+<div class="product-detail-container">
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-info">
+                <h1><i class="fas fa-pills"></i> {{ product.name }}</h1>
+                <p>تفاصيل المنتج</p>
+            </div>
+            <div class="header-actions">
+                {% if current_user.role in ['user', 'pharmacist'] %}
+                <a href="{{ url_for('edit_product', product_id=product.id) }}" class="btn-primary">
+                    <i class="fas fa-edit"></i> تعديل
+                </a>
+                {% endif %}
+                <a href="{{ url_for('products_list') }}" class="btn-secondary">
+                    <i class="fas fa-arrow-right"></i> العودة للقائمة
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="product-detail-content">
+        <div class="product-main">
+            <div class="product-image-section">
+                {% if product.image_url %}
+                <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-image">
+                {% else %}
+                <div class="no-image">
+                    <i class="fas fa-pills"></i>
+                    <p>لا توجد صورة</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="product-info-section">
+                <div class="product-header">
+                    <h2>{{ product.name }}</h2>
+                    {% if product.generic_name %}
+                    <p class="generic-name">{{ product.generic_name }}</p>
+                    {% endif %}
+
+                    <div class="product-badges">
+                        <span class="category-badge">{{ product.category }}</span>
+                        <span class="form-badge">{{ product.form }}</span>
+                        {% if product.requires_prescription %}
+                        <span class="prescription-badge">وصفة طبية</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="product-price-section">
+                    <div class="price-display">
+                        <span class="price">{{ "%.2f"|format(product.price) }} ريال</span>
+                    </div>
+
+                    <div class="stock-status">
+                        {% if product.is_in_stock() %}
+                        <span class="stock-available">
+                            <i class="fas fa-check-circle"></i> متوفر
+                        </span>
+                        {% else %}
+                        <span class="stock-unavailable">
+                            <i class="fas fa-times-circle"></i> غير متوفر
+                        </span>
+                        {% endif %}
+
+                        {% if product.is_low_stock() %}
+                        <span class="stock-low">
+                            <i class="fas fa-exclamation-triangle"></i> مخزون منخفض
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if current_user.role == 'patient' and product.is_in_stock() %}
+                <div class="add-to-cart-section">
+                    <form method="POST" action="{{ url_for('add_to_cart') }}" class="cart-form">
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <div class="quantity-selector">
+                            <label for="quantity">الكمية:</label>
+                            <input type="number" name="quantity" id="quantity" value="1" min="1"
+                                max="{{ product.stock_quantity }}">
+                        </div>
+                        <button type="submit" class="btn-add-cart">
+                            <i class="fas fa-cart-plus"></i> إضافة للسلة
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="product-details-section">
+            <div class="details-grid">
+                <div class="detail-card">
+                    <h3><i class="fas fa-info-circle"></i> معلومات أساسية</h3>
+                    <div class="detail-content">
+                        {% if product.manufacturer %}
+                        <div class="detail-item">
+                            <span class="label">الشركة المصنعة:</span>
+                            <span class="value">{{ product.manufacturer }}</span>
+                        </div>
+                        {% endif %}
+
+                        {% if product.strength %}
+                        <div class="detail-item">
+                            <span class="label">القوة:</span>
+                            <span class="value">{{ product.strength }}</span>
+                        </div>
+                        {% endif %}
+
+                        <div class="detail-item">
+                            <span class="label">المخزون المتوفر:</span>
+                            <span class="value">{{ product.stock_quantity }} وحدة</span>
+                        </div>
+
+                        <div class="detail-item">
+                            <span class="label">الصيدلية:</span>
+                            <span class="value">{{ product.pharmacy.name }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {% if product.description %}
+                <div class="detail-card">
+                    <h3><i class="fas fa-align-right"></i> الوصف</h3>
+                    <div class="detail-content">
+                        <p>{{ product.description }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if product.dosage_instructions %}
+                <div class="detail-card">
+                    <h3><i class="fas fa-prescription-bottle-alt"></i> تعليمات الاستخدام</h3>
+                    <div class="detail-content">
+                        <p>{{ product.dosage_instructions }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if product.side_effects %}
+                <div class="detail-card">
+                    <h3><i class="fas fa-exclamation-triangle"></i> الآثار الجانبية</h3>
+                    <div class="detail-content">
+                        <p>{{ product.side_effects }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if product.contraindications %}
+                <div class="detail-card">
+                    <h3><i class="fas fa-ban"></i> موانع الاستخدام</h3>
+                    <div class="detail-content">
+                        <p>{{ product.contraindications }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="pharmacy-info-section">
+            <div class="pharmacy-card">
+                <h3><i class="fas fa-store"></i> معلومات الصيدلية</h3>
+                <div class="pharmacy-details">
+                    <div class="pharmacy-item">
+                        <i class="fas fa-building"></i>
+                        <span>{{ product.pharmacy.name }}</span>
+                    </div>
+
+                    <div class="pharmacy-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ product.pharmacy.address }}</span>
+                    </div>
+
+                    <div class="pharmacy-item">
+                        <i class="fas fa-phone"></i>
+                        <span>{{ product.pharmacy.phone }}</span>
+                    </div>
+
+                    {% if product.pharmacy.email %}
+                    <div class="pharmacy-item">
+                        <i class="fas fa-envelope"></i>
+                        <span>{{ product.pharmacy.email }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="pharmacy-actions">
+                    <a href="{{ url_for('pharmacy_detail', pharmacy_id=product.pharmacy.id) }}" class="btn-pharmacy">
+                        <i class="fas fa-eye"></i> عرض الصيدلية
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .product-detail-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 30px;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-info h1 {
+        margin: 0 0 10px 0;
+        color: var(--text-primary);
+        font-size: 2.2em;
+        font-weight: 700;
+    }
+
+    .header-info p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 1.1em;
+    }
+
+    .header-info i {
+        margin-left: 10px;
+        color: var(--primary-color);
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 15px;
+    }
+
+    .product-detail-content {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .product-main {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 30px;
+    }
+
+    .product-image-section {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .product-image {
+        width: 100%;
+        max-width: 300px;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 15px;
+        box-shadow: var(--shadow-md);
+    }
+
+    .no-image {
+        width: 100%;
+        max-width: 300px;
+        height: 300px;
+        background: var(--bg-secondary);
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-secondary);
+    }
+
+    .no-image i {
+        font-size: 4em;
+        margin-bottom: 15px;
+    }
+
+    .product-info-section {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .product-header h2 {
+        margin: 0 0 10px 0;
+        color: var(--text-primary);
+        font-size: 2em;
+        font-weight: 600;
+    }
+
+    .generic-name {
+        margin: 0 0 15px 0;
+        color: var(--text-secondary);
+        font-size: 1.1em;
+        font-style: italic;
+    }
+
+    .product-badges {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .category-badge,
+    .form-badge,
+    .prescription-badge {
+        padding: 6px 12px;
+        border-radius: 15px;
+        font-size: 0.8em;
+        font-weight: 600;
+    }
+
+    .category-badge {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .form-badge {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .prescription-badge {
+        background: #ffc107;
+        color: #212529;
+    }
+
+    .product-price-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        background: var(--bg-secondary);
+        border-radius: 10px;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .price {
+        color: var(--primary-color);
+        font-size: 2em;
+        font-weight: 700;
+    }
+
+    .stock-status {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        align-items: flex-end;
+    }
+
+    .stock-available {
+        color: #28a745;
+        font-weight: 600;
+    }
+
+    .stock-unavailable {
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+    .stock-low {
+        color: #ffc107;
+        font-size: 0.9em;
+        font-weight: 500;
+    }
+
+    .add-to-cart-section {
+        padding: 20px;
+        background: var(--bg-secondary);
+        border-radius: 10px;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .cart-form {
+        display: flex;
+        gap: 15px;
+        align-items: end;
+    }
+
+    .quantity-selector {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .quantity-selector label {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 0.9em;
+    }
+
+    .quantity-selector input {
+        width: 80px;
+        padding: 10px;
+        border: 2px solid rgba(0, 191, 166, 0.3);
+        border-radius: 8px;
+        background: var(--bg-card);
+        color: var(--text-primary);
+        text-align: center;
+    }
+
+    .btn-add-cart {
+        background: #28a745;
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-add-cart:hover {
+        background: #218838;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .product-details-section {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+    }
+
+    .detail-card {
+        background: var(--bg-secondary);
+        padding: 25px;
+        border-radius: 10px;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .detail-card h3 {
+        margin: 0 0 20px 0;
+        color: var(--text-primary);
+        font-size: 1.2em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .detail-card h3 i {
+        color: var(--primary-color);
+    }
+
+    .detail-content p {
+        margin: 0;
+        color: var(--text-primary);
+        line-height: 1.6;
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(0, 191, 166, 0.1);
+    }
+
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+
+    .detail-item .label {
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .detail-item .value {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .pharmacy-info-section {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .pharmacy-card h3 {
+        margin: 0 0 25px 0;
+        color: var(--text-primary);
+        font-size: 1.4em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .pharmacy-card h3 i {
+        color: var(--primary-color);
+    }
+
+    .pharmacy-details {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .pharmacy-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .pharmacy-item i {
+        color: var(--primary-color);
+        font-size: 1.2em;
+        width: 20px;
+    }
+
+    .pharmacy-item span {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    .pharmacy-actions {
+        display: flex;
+        justify-content: center;
+    }
+
+    .btn-pharmacy {
+        background: var(--primary-color);
+        color: white;
+        padding: 12px 25px;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-pharmacy:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        padding: 12px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.9em;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        border: 2px solid rgba(0, 191, 166, 0.3);
+    }
+
+    .btn-secondary:hover {
+        background: var(--bg-card);
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .header-content {
+            flex-direction: column;
+            gap: 20px;
+            text-align: center;
+        }
+
+        .product-main {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .cart-form {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .quantity-selector {
+            align-items: center;
+        }
+    }
+</style>
+{% endblock %}

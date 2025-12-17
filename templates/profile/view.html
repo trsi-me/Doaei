@@ -1,0 +1,731 @@
+{% extends "base.html" %}
+
+{% block title %}الملف الشخصي - دوائي{% endblock %}
+
+{% block content %}
+<div class="profile-view-container">
+    <div class="page-header">
+        <h1><i class="fas fa-user"></i> الملف الشخصي</h1>
+        <p>معلوماتك الشخصية والطبية</p>
+    </div>
+
+    <div class="profile-content">
+        <div class="profile-sidebar">
+            <div class="profile-avatar">
+                <div class="avatar-container">
+                    <img src="{{ current_user.avatar_url or url_for('static', filename='images/default-avatar.png') }}"
+                        alt="صورة الملف الشخصي" class="avatar-image">
+                    <div class="avatar-badge">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                <h3 class="user-name">{{ current_user.full_name }}</h3>
+                <p class="user-role">{{ current_user.role|title }}</p>
+            </div>
+
+            <div class="profile-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-pills"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>{{ current_user.medications|length }}</h4>
+                        <p>إجمالي الأدوية</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>{{ current_user.consultations|length }}</h4>
+                        <p>الاستشارات</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>{% if current_user.created_at %}{{ current_user.created_at.strftime('%Y') }}{% else %}غير محدد{% endif %}</h4>
+                        <p>سنة الانضمام</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-actions">
+                <a href="{{ url_for('edit_profile') }}" class="btn-action">
+                    <i class="fas fa-edit"></i> تعديل الملف
+                </a>
+                <a href="{{ url_for('change_password') }}" class="btn-action">
+                    <i class="fas fa-key"></i> تغيير كلمة المرور
+                </a>
+            </div>
+        </div>
+
+        <div class="profile-main">
+            <div class="profile-tabs">
+                <button class="tab-button active" data-tab="personal">
+                    <i class="fas fa-user"></i> المعلومات الشخصية
+                </button>
+                <button class="tab-button" data-tab="medical">
+                    <i class="fas fa-heartbeat"></i> المعلومات الطبية
+                </button>
+                <button class="tab-button" data-tab="settings">
+                    <i class="fas fa-cog"></i> الإعدادات
+                </button>
+            </div>
+
+            <div class="tab-content">
+                <div class="tab-pane active" id="personal">
+                    <div class="info-section">
+                        <h3><i class="fas fa-id-card"></i> المعلومات الأساسية</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>الاسم الكامل</label>
+                                <span>{{ current_user.full_name or 'غير محدد' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>البريد الإلكتروني</label>
+                                <span>{{ current_user.email }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>رقم الهاتف</label>
+                                <span>{{ current_user.phone or 'غير محدد' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>تاريخ الميلاد</label>
+                                <span>{{ current_user.date_of_birth.strftime('%Y-%m-%d') if current_user.date_of_birth
+                                    else 'غير محدد' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>الجنس</label>
+                                <span>{% if current_user.gender == 'male' %}ذكر{% elif current_user.gender == 'female' %}أنثى{% else %}غير محدد{% endif %}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>فصيلة الدم</label>
+                                <span>{{ current_user.blood_type or 'غير محدد' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>الطبيب المعالج</label>
+                                <span>{{ current_user.doctor.full_name if current_user.doctor else 'غير محدد' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h3><i class="fas fa-map-marker-alt"></i> العنوان</h3>
+                        <div class="info-grid">
+                            <div class="info-item full-width">
+                                <label>العنوان التفصيلي</label>
+                                <span>{{ current_user.address or 'غير محدد' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>المدينة</label>
+                                <span>{{ current_user.city or 'غير محدد' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>الرمز البريدي</label>
+                                <span>{{ current_user.postal_code or 'غير محدد' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="medical">
+                    <div class="info-section">
+                        <h3><i class="fas fa-stethoscope"></i> الحالات الطبية</h3>
+                        <div class="info-grid">
+                            <div class="info-item full-width">
+                                <label>الأمراض المزمنة</label>
+                                <span>{{ current_user.chronic_diseases or 'لا توجد أمراض مزمنة مسجلة' }}</span>
+                            </div>
+                            <div class="info-item full-width">
+                                <label>الحالات الطبية</label>
+                                <span>{{ current_user.medical_conditions or 'لا توجد حالات طبية مسجلة' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h3><i class="fas fa-exclamation-triangle"></i> الحساسيات</h3>
+                        <div class="info-grid">
+                            <div class="info-item full-width">
+                                <label>حساسية الأدوية</label>
+                                <span>{{ current_user.drug_allergies or 'لا توجد حساسيات دوائية مسجلة' }}</span>
+                            </div>
+                            <div class="info-item full-width">
+                                <label>الحساسيات الأخرى</label>
+                                <span>{{ current_user.allergies or 'لا توجد حساسيات مسجلة' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h3><i class="fas fa-phone-alt"></i> جهة الاتصال في الطوارئ</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>الاسم</label>
+                                <span>{{ current_user.emergency_contact_name or 'غير محدد' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>رقم الهاتف</label>
+                                <span>{{ current_user.emergency_contact_phone or 'غير محدد' }}</span>
+                            </div>
+                            <div class="info-item full-width">
+                                <label>معلومات إضافية</label>
+                                <span>{{ current_user.emergency_contact or 'لا توجد معلومات إضافية' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h3><i class="fas fa-weight"></i> المعلومات البدنية</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>الوزن (كيلوغرام)</label>
+                                <span>{{ current_user.weight or 'غير محدد' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>الطول (سنتيمتر)</label>
+                                <span>{{ current_user.height or 'غير محدد' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h3><i class="fas fa-pills"></i> الأدوية النشطة</h3>
+                        <div class="medications-list">
+                            {% if active_medications %}
+                            {% for medication in active_medications %}
+                            <div class="medication-item">
+                                <div class="medication-info">
+                                    <h4>{{ medication.name }}</h4>
+                                    <p>{{ medication.dosage }} - {{ medication.frequency }}</p>
+                                    <small>تاريخ البدء: {{ medication.start_date.strftime('%Y-%m-%d') if medication.start_date else 'غير محدد' }}</small>
+                                </div>
+                                <div class="medication-status">
+                                    <span class="status-badge active">نشط</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <p class="no-data">لا توجد أدوية نشطة</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h3><i class="fas fa-archive"></i> الأدوية السابقة (الأرشيف)</h3>
+                        <div class="medications-list">
+                            {% if archived_medications %}
+                            {% for medication in archived_medications %}
+                            <div class="medication-item archived">
+                                <div class="medication-info">
+                                    <h4>{{ medication.name }}</h4>
+                                    <p>{{ medication.dosage }} - {{ medication.frequency }}</p>
+                                    <small>تاريخ البدء: {{ medication.start_date.strftime('%Y-%m-%d') if medication.start_date else 'غير محدد' }}</small>
+                                    {% if medication.end_date %}
+                                    <small>تاريخ الانتهاء: {{ medication.end_date.strftime('%Y-%m-%d') if medication.end_date else 'غير محدد' }}</small>
+                                    {% endif %}
+                                </div>
+                                <div class="medication-status">
+                                    <span class="status-badge inactive">منتهي</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <p class="no-data">لا توجد أدوية سابقة في الأرشيف</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="settings">
+                    <div class="info-section">
+                        <h3><i class="fas fa-language"></i> إعدادات اللغة والمنطقة</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>اللغة المفضلة</label>
+                                <span>{{ current_user.language or 'العربية' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>المنطقة الزمنية</label>
+                                <span>{{ current_user.timezone or 'Asia/Riyadh' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h3><i class="fas fa-bell"></i> إعدادات الإشعارات</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>الإشعارات عبر البريد الإلكتروني</label>
+                                <span
+                                    class="status-badge {{ 'active' if current_user.email_notifications else 'inactive' }}">
+                                    {{ 'مفعل' if current_user.email_notifications else 'معطل' }}
+                                </span>
+                            </div>
+                            <div class="info-item">
+                                <label>الإشعارات عبر الرسائل النصية</label>
+                                <span
+                                    class="status-badge {{ 'active' if current_user.sms_notifications else 'inactive' }}">
+                                    {{ 'مفعل' if current_user.sms_notifications else 'معطل' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h3><i class="fas fa-shield-alt"></i> أمان الحساب</h3>
+                        <div class="security-info">
+                            <div class="security-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>تم التحقق من البريد الإلكتروني</span>
+                            </div>
+                            <div class="security-item">
+                                <i class="fas fa-clock"></i>
+                                <span>آخر تسجيل دخول: {% if current_user.last_login %}{{ current_user.last_login.strftime('%Y-%m-%d %H:%M') }}{% else %}غير محدد{% endif %}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-view-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 30px;
+        text-align: center;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .page-header h1 {
+        margin: 0 0 10px 0;
+        color: var(--text-primary);
+        font-size: 2.2em;
+        font-weight: 700;
+    }
+
+    .page-header p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 1.1em;
+    }
+
+    .page-header i {
+        margin-left: 10px;
+        color: var(--primary-color);
+    }
+
+    .profile-content {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 30px;
+        align-items: start;
+    }
+
+    .profile-sidebar {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        position: sticky;
+        top: 20px;
+    }
+
+    .profile-avatar {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .avatar-container {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 15px;
+    }
+
+    .avatar-image {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid var(--primary-color);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .avatar-badge {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        background: var(--primary-color);
+        color: white;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+    }
+
+    .user-name {
+        margin: 0 0 5px 0;
+        color: var(--text-primary);
+        font-size: 1.3em;
+        font-weight: 600;
+    }
+
+    .user-role {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+        text-transform: capitalize;
+    }
+
+    .profile-stats {
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        background: var(--bg-secondary);
+        border-radius: 10px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 15px;
+    }
+
+    .stat-icon i {
+        color: white;
+        font-size: 1.2rem;
+    }
+
+    .stat-content h4 {
+        margin: 0 0 5px 0;
+        color: var(--text-primary);
+        font-size: 1.2em;
+        font-weight: 600;
+    }
+
+    .stat-content p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+    }
+
+    .profile-actions {
+        border-top: 1px solid rgba(0, 191, 166, 0.2);
+        padding-top: 20px;
+    }
+
+    .btn-action {
+        display: block;
+        width: 100%;
+        padding: 12px 20px;
+        margin-bottom: 10px;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        text-decoration: none;
+        border-radius: 8px;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(0, 191, 166, 0.3);
+    }
+
+    .btn-action:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-action i {
+        margin-left: 8px;
+    }
+
+    .profile-main {
+        background: var(--bg-glass);
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        overflow: hidden;
+    }
+
+    .profile-tabs {
+        display: flex;
+        background: var(--bg-secondary);
+        border-bottom: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .tab-button {
+        flex: 1;
+        padding: 20px;
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-bottom: 3px solid transparent;
+    }
+
+    .tab-button:hover {
+        color: var(--text-primary);
+        background: var(--bg-card);
+    }
+
+    .tab-button.active {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+        background: var(--bg-card);
+    }
+
+    .tab-button i {
+        margin-left: 8px;
+    }
+
+    .tab-content {
+        padding: 30px;
+    }
+
+    .tab-pane {
+        display: none;
+    }
+
+    .tab-pane.active {
+        display: block;
+    }
+
+    .info-section {
+        margin-bottom: 40px;
+        padding-bottom: 30px;
+        border-bottom: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .info-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .info-section h3 {
+        margin: 0 0 25px 0;
+        color: var(--text-primary);
+        font-size: 1.4em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+
+    .info-section h3 i {
+        margin-left: 10px;
+        color: var(--primary-color);
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .info-item.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .info-item label {
+        color: var(--text-secondary);
+        font-size: 0.9em;
+        font-weight: 500;
+    }
+
+    .info-item span {
+        color: var(--text-primary);
+        font-size: 1em;
+        font-weight: 400;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+
+    .status-badge.active {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+
+    .status-badge.inactive {
+        background: rgba(108, 117, 125, 0.2);
+        color: #6c757d;
+    }
+
+    .medications-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .medication-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background: var(--bg-secondary);
+        border-radius: 10px;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .medication-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .medication-item.archived {
+        opacity: 0.7;
+        background: rgba(108, 117, 125, 0.1);
+    }
+
+    .medication-info h4 {
+        margin: 0 0 5px 0;
+        color: var(--text-primary);
+        font-size: 1.1em;
+    }
+
+    .medication-info p {
+        margin: 0 0 5px 0;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+    }
+
+    .medication-info small {
+        display: block;
+        color: var(--text-secondary);
+        font-size: 0.8em;
+        margin-top: 5px;
+        opacity: 0.8;
+    }
+
+    .no-data {
+        text-align: center;
+        color: var(--text-secondary);
+        font-style: italic;
+        padding: 40px;
+    }
+
+    .security-info {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .security-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-primary);
+    }
+
+    .security-item i {
+        color: var(--primary-color);
+        font-size: 1.1em;
+    }
+
+    @media (max-width: 768px) {
+        .profile-content {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .profile-sidebar {
+            position: static;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .profile-tabs {
+            flex-direction: column;
+        }
+
+        .tab-button {
+            border-bottom: none;
+            border-left: 3px solid transparent;
+        }
+
+        .tab-button.active {
+            border-left-color: var(--primary-color);
+            border-bottom-color: transparent;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const targetTab = this.getAttribute('data-tab');
+
+                // Remove active class from all buttons and panes
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabPanes.forEach(pane => pane.classList.remove('active'));
+
+                // Add active class to clicked button and corresponding pane
+                this.classList.add('active');
+                document.getElementById(targetTab).classList.add('active');
+            });
+        });
+    });
+</script>
+{% endblock %}

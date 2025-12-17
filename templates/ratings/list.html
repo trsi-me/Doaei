@@ -1,0 +1,428 @@
+{% extends "base.html" %}
+
+{% block title %}تقييمات الأدوية - دوائي{% endblock %}
+
+{% block content %}
+<div class="ratings-container">
+    <div class="page-header">
+        <h1><i class="fas fa-star"></i> تقييمات الأدوية والمراجعات</h1>
+        <p>اقرأ المراجعات والتقييمات من المستخدمين الآخرين</p>
+        <a href="{{ url_for('ratings') }}" class="btn-primary">
+            <i class="fas fa-plus"></i> إضافة مراجعة
+        </a>
+    </div>
+
+    <!-- البحث والتصفية -->
+    <div class="search-filter-section">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="البحث في الأدوية..." class="form-input">
+        </div>
+        <div class="filter-box">
+            <select id="ratingFilter" class="form-select">
+                <option value="">جميع التقييمات</option>
+                <option value="5">5 نجوم</option>
+                <option value="4">4 نجوم</option>
+                <option value="3">3 نجوم</option>
+                <option value="2">2 نجوم</option>
+                <option value="1">نجمة واحدة</option>
+            </select>
+        </div>
+    </div>
+
+    {% if ratings %}
+    <div class="ratings-grid" id="ratingsContainer">
+        {% for rating in ratings %}
+        <div class="rating-card rating-item" data-rating="{{ rating.rating }}"
+            data-name="{{ rating.medication_name.lower() }}">
+            <div class="rating-header">
+                <h5><i class="fas fa-pills"></i> {{ rating.medication_name }}</h5>
+                <div class="rating-stars">
+                    {% for i in range(5) %}
+                    {% if i < rating.rating %} <i class="fas fa-star star-filled"></i>
+                        {% else %}
+                        <i class="far fa-star star-empty"></i>
+                        {% endif %}
+                        {% endfor %}
+                        <span class="rating-number">{{ rating.rating }}/5</span>
+                </div>
+            </div>
+            <div class="rating-body">
+                <div class="rating-content">
+                    <p class="rating-text">{{ rating.comment or 'لا توجد تعليقات' }}</p>
+                    <div class="rating-meta">
+                        <small class="text-muted">
+                            <i class="fas fa-user"></i> {{ rating.user.full_name }}
+                            <i class="fas fa-calendar"></i> {% if rating.created_at %}{{ rating.created_at.strftime('%Y-%m-%d') }}{% else %}غير محدد{% endif %}
+                        </small>
+                    </div>
+                </div>
+                {% if rating.effectiveness %}
+                <div class="rating-details">
+                    <div class="detail-item">
+                        <span class="detail-label">الفعالية:</span>
+                        <span class="detail-value">{{ rating.effectiveness }}/5</span>
+                    </div>
+                    {% if rating.side_effects %}
+                    <div class="detail-item">
+                        <span class="detail-label">الآثار الجانبية:</span>
+                        <span class="detail-value">{{ rating.side_effects }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-star"></i>
+        </div>
+        <h3>لا توجد تقييمات</h3>
+        <p>لا توجد تقييمات للأدوية متاحة بعد. كن أول من يشارك تجربته!</p>
+        <a href="{{ url_for('ratings') }}" class="btn-primary">
+            <i class="fas fa-plus"></i> إضافة أول مراجعة
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    /* الحاوي الرئيسي */
+    .ratings-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    /* رأس الصفحة */
+    .page-header {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .page-header h1 {
+        margin: 0 0 10px 0;
+        color: #2c3e50;
+        font-size: 2.2em;
+        font-weight: 700;
+    }
+
+    .page-header p {
+        margin: 0 0 20px 0;
+        color: #6c757d;
+        font-size: 1.1em;
+    }
+
+    .page-header i {
+        margin-left: 10px;
+        color: #f39c12;
+    }
+
+    /* الأزرار */
+    .btn-primary {
+        background-color: #f39c12;
+        color: white;
+        padding: 12px 25px;
+        text-decoration: none;
+        border-radius: 8px;
+        display: inline-block;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background-color: #e67e22;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(243, 156, 18, 0.3);
+    }
+
+    .btn-primary i {
+        margin-left: 8px;
+    }
+
+    /* قسم البحث والتصفية */
+    .search-filter-section {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+
+    .search-box,
+    .filter-box {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .form-input,
+    .form-select {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: #f39c12;
+        box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.1);
+    }
+
+    /* شبكة التقييمات */
+    .ratings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 25px;
+    }
+
+    /* بطاقة التقييم */
+    .rating-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .rating-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* رأس بطاقة التقييم */
+    .rating-header {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        color: white;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .rating-header h5 {
+        margin: 0;
+        font-size: 1.3em;
+        font-weight: 600;
+    }
+
+    .rating-header i {
+        margin-left: 8px;
+        color: #fff;
+    }
+
+    /* النجوم */
+    .rating-stars {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .star-filled {
+        color: #fff;
+        font-size: 1.2em;
+    }
+
+    .star-empty {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 1.2em;
+    }
+
+    .rating-number {
+        margin-left: 10px;
+        font-weight: bold;
+        font-size: 1.1em;
+    }
+
+    /* جسم بطاقة التقييم */
+    .rating-body {
+        padding: 25px;
+    }
+
+    /* محتوى التقييم */
+    .rating-content {
+        margin-bottom: 20px;
+    }
+
+    .rating-text {
+        margin-bottom: 15px;
+        color: #495057;
+        line-height: 1.6;
+        font-size: 1.05em;
+    }
+
+    .rating-meta {
+        margin-bottom: 15px;
+    }
+
+    .text-muted {
+        color: #6c757d;
+        font-size: 0.9em;
+    }
+
+    .text-muted i {
+        margin-left: 5px;
+        margin-right: 10px;
+    }
+
+    /* تفاصيل التقييم */
+    .rating-details {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .detail-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: #6c757d;
+    }
+
+    .detail-value {
+        color: #2c3e50;
+        font-weight: 500;
+    }
+
+    /* الحالة الفارغة */
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-top: 50px;
+    }
+
+    .empty-icon {
+        font-size: 5em;
+        color: #bdc3c7;
+        margin-bottom: 25px;
+    }
+
+    .empty-state h3 {
+        color: #2c3e50;
+        margin-bottom: 15px;
+        font-size: 1.8em;
+        font-weight: 600;
+    }
+
+    .empty-state p {
+        color: #6c757d;
+        margin-bottom: 30px;
+        font-size: 1.1em;
+        line-height: 1.6;
+    }
+
+    /* إخفاء العناصر */
+    .rating-item.hidden {
+        display: none;
+    }
+
+    /* التصميم المتجاوب */
+    @media (max-width: 768px) {
+        .ratings-container {
+            padding: 15px;
+        }
+
+        .page-header {
+            padding: 20px;
+        }
+
+        .page-header h1 {
+            font-size: 1.8em;
+        }
+
+        .ratings-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .rating-header {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .search-filter-section {
+            flex-direction: column;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .ratings-container {
+            padding: 10px;
+        }
+
+        .page-header {
+            padding: 15px;
+        }
+
+        .page-header h1 {
+            font-size: 1.5em;
+        }
+
+        .rating-body {
+            padding: 20px;
+        }
+
+        .rating-details {
+            padding: 15px;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('searchInput');
+        const ratingFilter = document.getElementById('ratingFilter');
+        const ratingItems = document.querySelectorAll('.rating-item');
+
+        function filterRatings() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedRating = ratingFilter.value;
+
+            ratingItems.forEach(item => {
+                const medicationName = item.dataset.name;
+                const rating = item.dataset.rating;
+
+                const matchesSearch = medicationName.includes(searchTerm);
+                const matchesRating = !selectedRating || rating === selectedRating;
+
+                if (matchesSearch && matchesRating) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        }
+
+        searchInput.addEventListener('input', filterRatings);
+        ratingFilter.addEventListener('change', filterRatings);
+    });
+</script>
+{% endblock %}

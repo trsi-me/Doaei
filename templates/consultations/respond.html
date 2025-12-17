@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}الرد على الاستشارة - دوائي{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="page-title">
+                <i class="fas fa-reply"></i>
+                الرد على الاستشارة
+            </h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-comment"></i> الاستشارة الأصلية</h5>
+                </div>
+                <div class="card-body">
+                    <div class="consultation-details">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>المرسل:</strong> {{ consultation.patient.full_name }}</p>
+                                <p><strong>التاريخ:</strong> {% if consultation.created_at %}{{ consultation.created_at.strftime('%Y-%m-%d %H:%M') }}{% else %}غير محدد{% endif %}
+                                </p>
+                                <p><strong>الحالة:</strong>
+                                    <span
+                                        class="badge bg-{% if consultation.status == 'pending' %}warning{% elif consultation.status == 'completed' %}success{% else %}info{% endif %}">
+                                        {{ consultation.status }}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>الأولوية:</strong> {{ consultation.priority }}</p>
+                                <p><strong>الفئة:</strong> {{ consultation.category or 'غير محدد' }}</p>
+                                {% if consultation.is_anonymous %}
+                                <p><strong>نوع الاستشارة:</strong> <span class="badge bg-secondary">مجهول</span></p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="consultation-content">
+                            <h6><i class="fas fa-question-circle"></i> الموضوع</h6>
+                            <p class="consultation-subject">{{ consultation.subject }}</p>
+
+                            <h6><i class="fas fa-comment-dots"></i> الرسالة</h6>
+                            <div class="consultation-message">
+                                {{ consultation.message|nl2br }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- نموذج الرد -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-edit"></i> كتابة الرد</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+
+                        <div class="mb-3">
+                            {{ form.reply.label(class="form-label") }}
+                            {{ form.reply(class="form-control", rows="8", placeholder="اكتب ردك هنا...") }}
+                            {% if form.reply.errors %}
+                            <div class="text-danger">
+                                {% for error in form.reply.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-paper-plane"></i>
+                                إرسال الرد
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- معلومات المريض -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-user"></i> معلومات المريض</h5>
+                </div>
+                <div class="card-body">
+                    <div class="patient-info">
+                        <div class="info-item">
+                            <i class="fas fa-user"></i>
+                            <div>
+                                <strong>الاسم:</strong>
+                                <p>{{ consultation.patient.full_name }}</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <strong>البريد الإلكتروني:</strong>
+                                <p>{{ consultation.patient.email }}</p>
+                            </div>
+                        </div>
+
+                        {% if consultation.patient.phone %}
+                        <div class="info-item">
+                            <i class="fas fa-phone"></i>
+                            <div>
+                                <strong>رقم الهاتف:</strong>
+                                <p>{{ consultation.patient.phone }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- نصائح للرد -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-lightbulb"></i> نصائح للرد</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> اقرأ الاستشارة بعناية</li>
+                        <li><i class="fas fa-check text-success"></i> قدم معلومات دقيقة ومفيدة</li>
+                        <li><i class="fas fa-check text-success"></i> استخدم لغة واضحة ومفهومة</li>
+                        <li><i class="fas fa-check text-success"></i> أضف تحذيرات إذا لزم الأمر</li>
+                        <li><i class="fas fa-check text-success"></i> اقترح زيارة الطبيب عند الحاجة</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- إجراءات سريعة -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-cogs"></i> إجراءات سريعة</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('consultations') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i>
+                            العودة للاستشارات
+                        </a>
+
+                        <button type="button" class="btn btn-info btn-sm" onclick="markAsUrgent()">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            تحديد كعاجل
+                        </button>
+
+                        <button type="button" class="btn btn-warning btn-sm" onclick="requestMoreInfo()">
+                            <i class="fas fa-question-circle"></i>
+                            طلب معلومات إضافية
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .consultation-details {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .consultation-content h6 {
+        color: #495057;
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+
+    .consultation-subject {
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        border-left: 4px solid #007bff;
+        font-weight: 500;
+    }
+
+    .consultation-message {
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        border-left: 4px solid #28a745;
+        line-height: 1.6;
+    }
+
+    .patient-info .info-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .patient-info .info-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .patient-info .info-item i {
+        font-size: 18px;
+        color: #007bff;
+        margin-left: 15px;
+        margin-top: 5px;
+    }
+
+    .patient-info .info-item div {
+        flex: 1;
+    }
+
+    .patient-info .info-item strong {
+        display: block;
+        margin-bottom: 5px;
+        color: #495057;
+    }
+
+    .patient-info .info-item p {
+        margin: 0;
+        color: #6c757d;
+        font-size: 14px;
+    }
+</style>
+
+<script>
+    function markAsUrgent() {
+        if (confirm('هل تريد تحديد هذه الاستشارة كعاجلة؟')) {
+            // إضافة منطق تحديد الأولوية كعاجلة
+            alert('تم تحديد الاستشارة كعاجلة');
+        }
+    }
+
+    function requestMoreInfo() {
+        const info = prompt('ما هي المعلومات الإضافية المطلوبة؟');
+        if (info) {
+            // إضافة منطق طلب معلومات إضافية
+            alert('تم إرسال طلب المعلومات الإضافية');
+        }
+    }
+</script>
+{% endblock %}

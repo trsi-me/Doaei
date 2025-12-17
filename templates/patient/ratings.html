@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}التقييمات - دوائي{% endblock %}
+
+{% block content %}
+<div class="ratings-container">
+    <div class="page-header">
+        <h1><i class="fas fa-star" style="color: #FFD54F;"></i> التقييمات والمراجعات</h1>
+        <p>عرض جميع التقييمات والمراجعات الخاصة بك</p>
+    </div>
+
+    <!-- التقييمات الطبية -->
+    <div class="section-card">
+        <div class="card-header">
+            <h2><i class="fas fa-clipboard-list" style="color: #EF5350;"></i> التقييمات الطبية</h2>
+        </div>
+        <div class="card-content">
+            {% if evaluations %}
+            <div class="evaluations-list">
+                {% for evaluation in evaluations %}
+                <div class="evaluation-item">
+                    <div class="evaluation-header">
+                        <div class="evaluation-date">
+                            <i class="fas fa-calendar" style="color: #FFB74D;"></i>
+                            {{ evaluation.evaluation_date.strftime('%Y-%m-%d') if evaluation.evaluation_date else 'غير محدد' }}
+                        </div>
+                        <div class="evaluation-type">
+                            <i class="fas fa-tag" style="color: #BA68C8;"></i>
+                            {{ evaluation.evaluation_type }}
+                        </div>
+                    </div>
+                    {% if evaluation.doctor %}
+                    <div class="evaluation-doctor">
+                        <i class="fas fa-user-md" style="color: #00BFA5;"></i>
+                        د. {{ evaluation.doctor.full_name }}
+                    </div>
+                    {% endif %}
+                    {% if evaluation.diagnosis %}
+                    <div class="evaluation-diagnosis">
+                        <strong>التشخيص:</strong> {{ evaluation.diagnosis }}
+                    </div>
+                    {% endif %}
+                    {% if evaluation.recommendations %}
+                    <div class="evaluation-recommendations">
+                        <strong>التوصيات:</strong> {{ evaluation.recommendations }}
+                    </div>
+                    {% endif %}
+                    {% if evaluation.next_visit_date %}
+                    <div class="evaluation-next-visit">
+                        <i class="fas fa-calendar-check" style="color: #66BB6A;"></i>
+                        موعد الزيارة القادمة: {{ evaluation.next_visit_date.strftime('%Y-%m-%d') if evaluation.next_visit_date else 'غير محدد' }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-clipboard" style="color: #90A4AE; font-size: 3em;"></i>
+                <p>لا توجد تقييمات طبية متاحة</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- المراجعات -->
+    <div class="section-card">
+        <div class="card-header">
+            <h2><i class="fas fa-star" style="color: #FFD54F;"></i> المراجعات</h2>
+        </div>
+        <div class="card-content">
+            {% if reviews %}
+            <div class="reviews-list">
+                {% for review in reviews %}
+                <div class="review-item">
+                    <div class="review-header">
+                        <div class="review-rating">
+                            {% for i in range(1, 6) %}
+                                {% if i <= review.rating %}
+                                    <i class="fas fa-star" style="color: #FFD54F;"></i>
+                                {% else %}
+                                    <i class="far fa-star" style="color: #90A4AE;"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="review-date">
+                            <i class="fas fa-calendar-alt" style="color: #64B5F6;"></i>
+                            {{ review.created_at.strftime('%Y-%m-%d') if review.created_at else 'غير محدد' }}
+                        </div>
+                    </div>
+                    {% if review.title %}
+                    <div class="review-title">
+                        <strong>{{ review.title }}</strong>
+                    </div>
+                    {% endif %}
+                    {% if review.comment %}
+                    <div class="review-comment">
+                        {{ review.comment }}
+                    </div>
+                    {% endif %}
+                    {% if review.pharmacy %}
+                    <div class="review-pharmacy">
+                        <i class="fas fa-store" style="color: #42A5F5;"></i>
+                        {{ review.pharmacy.name }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-star" style="color: #90A4AE; font-size: 3em;"></i>
+                <p>لا توجد مراجعات متاحة</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .ratings-container {
+        max-width: 1200px;
+        margin: 30px auto;
+        padding: 0 20px;
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .page-header h1 {
+        font-size: 2.5em;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+    }
+
+    .page-header p {
+        color: var(--text-secondary);
+        font-size: 1.1em;
+    }
+
+    .section-card {
+        background: var(--bg-glass);
+        -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(20px);
+        border-radius: var(--border-radius-lg);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: var(--bg-glass-hover);
+        padding: 20px;
+        border-bottom: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.5em;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .card-content {
+        padding: 20px;
+    }
+
+    .evaluations-list,
+    .reviews-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .evaluation-item,
+    .review-item {
+        background: var(--bg-glass-hover);
+        padding: 20px;
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .evaluation-item:hover,
+    .review-item:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-primary);
+    }
+
+    .evaluation-header,
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .evaluation-date,
+    .evaluation-type,
+    .review-date {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+    }
+
+    .evaluation-doctor,
+    .evaluation-diagnosis,
+    .evaluation-recommendations,
+    .evaluation-next-visit {
+        margin-bottom: 10px;
+        color: var(--text-primary);
+    }
+
+    .evaluation-doctor {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    .review-rating {
+        display: flex;
+        gap: 5px;
+    }
+
+    .review-title {
+        font-size: 1.1em;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: var(--text-primary);
+    }
+
+    .review-comment {
+        color: var(--text-secondary);
+        margin-bottom: 10px;
+        line-height: 1.6;
+    }
+
+    .review-pharmacy {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-secondary);
+    }
+
+    .empty-state i {
+        margin-bottom: 20px;
+    }
+
+    .empty-state p {
+        font-size: 1.1em;
+    }
+
+    @media (max-width: 768px) {
+        .ratings-container {
+            padding: 0 15px;
+        }
+
+        .page-header h1 {
+            font-size: 2em;
+        }
+
+        .evaluation-header,
+        .review-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+

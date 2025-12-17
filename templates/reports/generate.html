@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}إنشاء تقرير - دوائي{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="page-title">
+                <i class="fas fa-file-alt"></i>
+                إنشاء تقرير جديد
+            </h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-plus"></i> إعدادات التقرير</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control", placeholder="أدخل عنوان التقرير") }}
+                            {% if form.title.errors %}
+                            <div class="text-danger">
+                                {% for error in form.title.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.report_type.label(class="form-label") }}
+                            {{ form.report_type(class="form-select") }}
+                            {% if form.report_type.errors %}
+                            <div class="text-danger">
+                                {% for error in form.report_type.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.start_date.label(class="form-label") }}
+                                    {{ form.start_date(class="form-control") }}
+                                    {% if form.start_date.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.start_date.errors %}
+                                        <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.end_date.label(class="form-label") }}
+                                    {{ form.end_date(class="form-control") }}
+                                    {% if form.end_date.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.end_date.errors %}
+                                        <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.doctor_name.label(class="form-label") }}
+                            {{ form.doctor_name(class="form-control", placeholder="اسم الطبيب (اختياري)") }}
+                            {% if form.doctor_name.errors %}
+                            <div class="text-danger">
+                                {% for error in form.doctor_name.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.summary.label(class="form-label") }}
+                            {{ form.summary(class="form-control", rows="4", placeholder="ملخص التقرير (اختياري)") }}
+                            {% if form.summary.errors %}
+                            <div class="text-danger">
+                                {% for error in form.summary.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-file-pdf"></i>
+                                إنشاء التقرير
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- معلومات التقرير -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> معلومات التقرير</h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <i class="fas fa-user"></i>
+                        <div>
+                            <strong>المريض:</strong>
+                            <p>{{ current_user.full_name }}</p>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <i class="fas fa-calendar"></i>
+                        <div>
+                            <strong>تاريخ الإنشاء:</strong>
+                            <p>{{ current_date if current_date else '' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <i class="fas fa-file-pdf"></i>
+                        <div>
+                            <strong>التنسيق:</strong>
+                            <p>PDF</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- أنواع التقارير -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> أنواع التقارير</h5>
+                </div>
+                <div class="card-body">
+                    <div class="report-type">
+                        <i class="fas fa-pills"></i>
+                        <div>
+                            <strong>التزام الأدوية</strong>
+                            <p>تقرير عن مدى التزامك بتناول الأدوية</p>
+                        </div>
+                    </div>
+
+                    <div class="report-type">
+                        <i class="fas fa-heartbeat"></i>
+                        <div>
+                            <strong>ملخص صحي</strong>
+                            <p>ملخص شامل عن حالتك الصحية</p>
+                        </div>
+                    </div>
+
+                    <div class="report-type">
+                        <i class="fas fa-user-md"></i>
+                        <div>
+                            <strong>تقرير للطبيب</strong>
+                            <p>تقرير مفصل للطبيب المعالج</p>
+                        </div>
+                    </div>
+
+                    <div class="report-type">
+                        <i class="fas fa-calendar-alt"></i>
+                        <div>
+                            <strong>ملخص شهري</strong>
+                            <p>ملخص شهري عن الأدوية والصحة</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- نصائح -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-lightbulb"></i> نصائح</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> اختر فترة زمنية مناسبة</li>
+                        <li><i class="fas fa-check text-success"></i> تأكد من صحة التواريخ</li>
+                        <li><i class="fas fa-check text-success"></i> أضف ملاحظات مفيدة</li>
+                        <li><i class="fas fa-check text-success"></i> احفظ التقرير بعد الإنشاء</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .info-item,
+    .report-type {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .info-item:last-child,
+    .report-type:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .info-item i,
+    .report-type i {
+        font-size: 20px;
+        color: #007bff;
+        margin-left: 15px;
+        margin-top: 5px;
+    }
+
+    .info-item div,
+    .report-type div {
+        flex: 1;
+    }
+
+    .info-item strong,
+    .report-type strong {
+        display: block;
+        margin-bottom: 5px;
+        color: #495057;
+    }
+
+    .info-item p,
+    .report-type p {
+        margin: 0;
+        color: #6c757d;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}

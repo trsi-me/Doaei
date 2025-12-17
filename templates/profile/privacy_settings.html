@@ -1,0 +1,591 @@
+{% extends "base.html" %}
+
+{% block title %}إعدادات الخصوصية - دوائي{% endblock %}
+
+{% block content %}
+<div class="privacy-settings-container">
+    <div class="page-header">
+        <h1><i class="fas fa-shield-alt"></i> إعدادات الخصوصية</h1>
+        <p>تحكم في كيفية مشاركة معلوماتك الشخصية</p>
+    </div>
+
+    <div class="settings-container">
+        <form method="POST" class="privacy-form">
+            {{ form.hidden_tag() }}
+
+            <div class="settings-section">
+                <h3><i class="fas fa-user-secret"></i> خصوصية الملف الشخصي</h3>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>مشاركة المعلومات الطبية</h4>
+                        <p>السماح للأطباء بالوصول إلى معلوماتك الطبية</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            {{ form.share_medical_info() }}
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>مشاركة قائمة الأدوية</h4>
+                        <p>السماح للصيادلة برؤية قائمة أدويتك</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            {{ form.share_medications() }}
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>مشاركة التاريخ الطبي</h4>
+                        <p>السماح بمشاركة تاريخك الطبي مع مقدمي الرعاية</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            {{ form.share_medical_history() }}
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3><i class="fas fa-users"></i> مشاركة البيانات</h3>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>مشاركة مع أفراد العائلة</h4>
+                        <p>السماح لأفراد عائلتك بالوصول إلى معلوماتك</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            {{ form.share_with_family() }}
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>مشاركة مع مقدمي الرعاية</h4>
+                        <p>السماح لمقدمي الرعاية بالوصول إلى معلوماتك</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            {{ form.share_with_caregivers() }}
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>مشاركة البيانات للبحث</h4>
+                        <p>السماح باستخدام بياناتك المجهولة في الأبحاث الطبية</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            {{ form.share_for_research() }}
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3><i class="fas fa-bell"></i> إعدادات الإشعارات</h3>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>إشعارات التذكير</h4>
+                        <p>تلقي إشعارات تذكير الأدوية</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            {{ form.reminder_notifications() }}
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>إشعارات الاستشارات</h4>
+                        <p>تلقي إشعارات عند وجود استشارات جديدة</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            {{ form.consultation_notifications() }}
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>إشعارات الطلبات</h4>
+                        <p>تلقي إشعارات تحديثات الطلبات</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            {{ form.order_notifications() }}
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3><i class="fas fa-database"></i> إدارة البيانات</h3>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>حفظ البيانات محلياً</h4>
+                        <p>حفظ نسخة احتياطية من بياناتك على الجهاز</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            {{ form.local_data_storage() }}
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>تشفير البيانات</h4>
+                        <p>تشفير جميع البيانات الحساسة</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            {{ form.data_encryption() }}
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>حذف البيانات التلقائي</h4>
+                        <p>حذف البيانات القديمة تلقائياً بعد فترة معينة</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            {{ form.auto_delete_data() }}
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3><i class="fas fa-exclamation-triangle"></i> إجراءات متقدمة</h3>
+
+                <div class="action-buttons">
+                    <button type="button" class="btn-warning" onclick="exportData()">
+                        <i class="fas fa-download"></i> تصدير البيانات
+                    </button>
+                    <button type="button" class="btn-info" onclick="downloadData()">
+                        <i class="fas fa-file-download"></i> تحميل نسخة احتياطية
+                    </button>
+                    <button type="button" class="btn-danger" onclick="deleteAccount()">
+                        <i class="fas fa-trash"></i> حذف الحساب
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i> حفظ الإعدادات
+                </button>
+                <a href="{{ url_for('profile') }}" class="btn-secondary">
+                    <i class="fas fa-times"></i> إلغاء
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* الحاوي الرئيسي */
+    .privacy-settings-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    /* رأس الصفحة */
+    .page-header {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .page-header h1 {
+        margin: 0 0 10px 0;
+        color: #2c3e50;
+        font-size: 2.2em;
+        font-weight: 700;
+    }
+
+    .page-header p {
+        margin: 0;
+        color: #6c757d;
+        font-size: 1.1em;
+    }
+
+    .page-header i {
+        margin-left: 10px;
+        color: #dc3545;
+    }
+
+    /* حاوي الإعدادات */
+    .settings-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    /* أقسام الإعدادات */
+    .settings-section {
+        padding: 30px;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .settings-section:last-child {
+        border-bottom: none;
+    }
+
+    .settings-section h3 {
+        margin: 0 0 25px 0;
+        color: #2c3e50;
+        font-size: 1.4em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+
+    .settings-section h3 i {
+        margin-left: 10px;
+        color: #dc3545;
+    }
+
+    /* عنصر الإعداد */
+    .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 0;
+        border-bottom: 1px solid #f1f2f6;
+    }
+
+    .setting-item:last-child {
+        border-bottom: none;
+    }
+
+    .setting-info {
+        flex: 1;
+    }
+
+    .setting-info h4 {
+        margin: 0 0 5px 0;
+        color: #2c3e50;
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
+    .setting-info p {
+        margin: 0;
+        color: #6c757d;
+        font-size: 0.9em;
+        line-height: 1.4;
+    }
+
+    .setting-control {
+        margin-left: 20px;
+    }
+
+    /* مفتاح التبديل */
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked+.toggle-slider {
+        background-color: #dc3545;
+    }
+
+    input:checked+.toggle-slider:before {
+        transform: translateX(26px);
+    }
+
+    /* أزرار الإجراءات */
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .btn-warning,
+    .btn-info,
+    .btn-danger {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .btn-warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+
+    .btn-warning:hover {
+        background-color: #e0a800;
+        transform: translateY(-2px);
+    }
+
+    .btn-info {
+        background-color: #17a2b8;
+        color: white;
+    }
+
+    .btn-info:hover {
+        background-color: #138496;
+        transform: translateY(-2px);
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+        transform: translateY(-2px);
+    }
+
+    .btn-warning i,
+    .btn-info i,
+    .btn-danger i {
+        margin-left: 8px;
+    }
+
+    /* أزرار الإجراءات الرئيسية */
+    .form-actions {
+        padding: 30px;
+        background: #f8f9fa;
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .btn-primary {
+        background-color: #dc3545;
+        color: white;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .btn-primary:hover {
+        background-color: #c82333;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-primary i {
+        margin-left: 8px;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+        padding: 15px 30px;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+    }
+
+    .btn-secondary i {
+        margin-left: 8px;
+    }
+
+    /* التصميم المتجاوب */
+    @media (max-width: 768px) {
+        .privacy-settings-container {
+            padding: 15px;
+        }
+
+        .page-header {
+            padding: 20px;
+        }
+
+        .page-header h1 {
+            font-size: 1.8em;
+        }
+
+        .settings-section {
+            padding: 20px;
+        }
+
+        .setting-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .setting-control {
+            margin-left: 0;
+            align-self: flex-end;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-warning,
+        .btn-info,
+        .btn-danger {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .privacy-settings-container {
+            padding: 10px;
+        }
+
+        .page-header {
+            padding: 15px;
+        }
+
+        .page-header h1 {
+            font-size: 1.5em;
+        }
+
+        .settings-section {
+            padding: 15px;
+        }
+
+        .settings-section h3 {
+            font-size: 1.2em;
+        }
+    }
+</style>
+
+<script>
+    function exportData() {
+        if (confirm('هل تريد تصدير جميع بياناتك الشخصية؟')) {
+            // هنا يمكن إضافة منطق تصدير البيانات
+            alert('سيتم تصدير بياناتك قريباً');
+        }
+    }
+
+    function downloadData() {
+        if (confirm('هل تريد تحميل نسخة احتياطية من جميع بياناتك؟')) {
+            // هنا يمكن إضافة منطق تحميل البيانات
+            alert('سيتم تحميل نسخة احتياطية من بياناتك');
+        }
+    }
+
+    function deleteAccount() {
+        if (confirm('هل أنت متأكد من حذف حسابك نهائياً؟ لا يمكن التراجع عن هذا الإجراء.')) {
+            if (confirm('هذا الإجراء سيحذف جميع بياناتك نهائياً. هل أنت متأكد تماماً؟')) {
+                // هنا يمكن إضافة منطق حذف الحساب
+                alert('سيتم حذف حسابك قريباً');
+            }
+        }
+    }
+
+    // حفظ الإعدادات تلقائياً عند التغيير
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggles = document.querySelectorAll('input[type="checkbox"]');
+
+        toggles.forEach(toggle => {
+            toggle.addEventListener('change', function () {
+                // يمكن إضافة حفظ تلقائي هنا
+                console.log('تم تغيير إعداد:', this.name, 'إلى:', this.checked);
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,723 @@
+{% extends "base.html" %}
+
+{% block title %}عرض الاستشارة - دوائي{% endblock %}
+
+{% block content %}
+<div class="consultation-view-container">
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-info">
+                <h1><i class="fas fa-comments"></i> عرض الاستشارة</h1>
+                <p>تفاصيل الاستشارة الطبية</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('consultations') }}" class="btn-secondary">
+                    <i class="fas fa-arrow-right"></i> العودة للقائمة
+                </a>
+                {% if consultation.status == 'pending' and current_user.role in ['doctor', 'pharmacist'] %}
+                <a href="{{ url_for('respond_consultation', id=consultation.id) }}" class="btn-primary">
+                    <i class="fas fa-reply"></i> الرد على الاستشارة
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="consultation-content">
+        <div class="consultation-main">
+            <div class="consultation-card">
+                <div class="consultation-header">
+                    <div class="consultation-title">
+                        <h2>{{ consultation.subject }}</h2>
+                        <div class="consultation-meta">
+                            <span class="consultation-type">
+                                <i class="fas fa-stethoscope"></i>
+                                {{ consultation.consultation_type }}
+                            </span>
+                            <span class="consultation-urgency urgency-{{ consultation.urgency }}">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ consultation.urgency }}
+                            </span>
+                            <span class="consultation-status status-{{ consultation.status }}">
+                                <i class="fas fa-circle"></i>
+                                {{ consultation.status }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="consultation-date">
+                        <i class="fas fa-calendar-alt"></i>
+                        {% if consultation.created_at %}{{ consultation.created_at.strftime('%Y-%m-%d %H:%M') }}{% else %}غير محدد{% endif %}
+                    </div>
+                </div>
+
+                <div class="consultation-body">
+                    <div class="consultation-section">
+                        <h3><i class="fas fa-align-right"></i> وصف المشكلة</h3>
+                        <div class="consultation-text">
+                            {{ consultation.description }}
+                        </div>
+                    </div>
+
+                    {% if consultation.current_medications %}
+                    <div class="consultation-section">
+                        <h3><i class="fas fa-pills"></i> الأدوية الحالية</h3>
+                        <div class="consultation-text">
+                            {{ consultation.current_medications }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if consultation.allergies %}
+                    <div class="consultation-section">
+                        <h3><i class="fas fa-exclamation-triangle"></i> الحساسيات</h3>
+                        <div class="consultation-text">
+                            {{ consultation.allergies }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if consultation.medical_history %}
+                    <div class="consultation-section">
+                        <h3><i class="fas fa-history"></i> التاريخ الطبي</h3>
+                        <div class="consultation-text">
+                            {{ consultation.medical_history }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if consultation.attachment %}
+                    <div class="consultation-section">
+                        <h3><i class="fas fa-paperclip"></i> المرفقات</h3>
+                        <div class="attachment-list">
+                            <div class="attachment-item">
+                                <i class="fas fa-file-image"></i>
+                                <span>{{ consultation.attachment }}</span>
+                                <a href="{{ url_for('download_attachment', id=consultation.id) }}" class="btn-download">
+                                    <i class="fas fa-download"></i> تحميل
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if consultation.reply %}
+            <div class="response-card">
+                <div class="response-header">
+                    <h3><i class="fas fa-user-md"></i> رد الطبيب/الصيدلي</h3>
+                    <div class="response-meta">
+                        <span class="response-date">
+                            <i class="fas fa-calendar-alt"></i>
+                            {% if consultation.replied_at %}{{ consultation.replied_at.strftime('%Y-%m-%d %H:%M') }}{% else %}غير محدد{% endif %}
+                        </span>
+                        <span class="response-author">
+                            <i class="fas fa-user"></i>
+                            {{ consultation.responder.full_name if consultation.responder else 'غير محدد' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="response-body">
+                    <div class="response-text">
+                        {{ consultation.reply }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="consultation-sidebar">
+            <div class="patient-info">
+                <h3><i class="fas fa-user"></i> معلومات المريض</h3>
+                <div class="patient-details">
+                    <div class="patient-avatar">
+                        <img src="{{ consultation.patient.avatar_url or url_for('static', filename='images/default-avatar.png') }}"
+                            alt="صورة المريض" class="avatar-image">
+                    </div>
+                    <div class="patient-meta">
+                        <h4>{{ consultation.patient.full_name }}</h4>
+                        <p>{{ consultation.patient.email }}</p>
+                        {% if consultation.patient.phone %}
+                        <p><i class="fas fa-phone"></i> {{ consultation.patient.phone }}</p>
+                        {% endif %}
+                        {% if consultation.patient.date_of_birth %}
+                        <p><i class="fas fa-birthday-cake"></i> {% if consultation.patient.date_of_birth %}{{ consultation.patient.date_of_birth.strftime('%Y-%m-%d') }}{% else %}غير محدد{% endif %}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="consultation-info">
+                <h3><i class="fas fa-info-circle"></i> معلومات الاستشارة</h3>
+                <div class="info-list">
+                    <div class="info-item">
+                        <label>نوع الاستشارة</label>
+                        <span>{{ consultation.consultation_type }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>مستوى الإلحاح</label>
+                        <span class="urgency-{{ consultation.urgency }}">{{ consultation.urgency }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>الحالة</label>
+                        <span class="status-{{ consultation.status }}">{{ consultation.status }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>تاريخ الإنشاء</label>
+                        <span>{% if consultation.created_at %}{{ consultation.created_at.strftime('%Y-%m-%d %H:%M') }}{% else %}غير محدد{% endif %}</span>
+                    </div>
+                    {% if consultation.replied_at %}
+                    <div class="info-item">
+                        <label>تاريخ الرد</label>
+                        <span>{% if consultation.replied_at %}{{ consultation.replied_at.strftime('%Y-%m-%d %H:%M') }}{% else %}غير محدد{% endif %}</span>
+                    </div>
+                    {% endif %}
+                    <div class="info-item">
+                        <label>طريقة التواصل المفضلة</label>
+                        <span>{{ consultation.preferred_contact_method }}</span>
+                    </div>
+                </div>
+            </div>
+
+            {% if current_user.role in ['doctor', 'pharmacist'] and consultation.status == 'pending' %}
+            <div class="quick-actions">
+                <h3><i class="fas fa-bolt"></i> إجراءات سريعة</h3>
+                <div class="action-buttons">
+                    <a href="{{ url_for('respond_consultation', id=consultation.id) }}" class="btn-action primary">
+                        <i class="fas fa-reply"></i> الرد على الاستشارة
+                    </a>
+                    <button class="btn-action secondary" onclick="markAsUrgent({{ consultation.id }})">
+                        <i class="fas fa-exclamation-triangle"></i> وضع علامة عاجل
+                    </button>
+                    <button class="btn-action secondary" onclick="requestMoreInfo({{ consultation.id }})">
+                        <i class="fas fa-question-circle"></i> طلب معلومات إضافية
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .consultation-view-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 30px;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-info h1 {
+        margin: 0 0 10px 0;
+        color: var(--text-primary);
+        font-size: 2.2em;
+        font-weight: 700;
+    }
+
+    .header-info p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 1.1em;
+    }
+
+    .header-info i {
+        margin-left: 10px;
+        color: var(--primary-color);
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 15px;
+    }
+
+    .consultation-content {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 30px;
+        align-items: start;
+    }
+
+    .consultation-main {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .consultation-card,
+    .response-card {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .consultation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .consultation-title h2 {
+        margin: 0 0 15px 0;
+        color: var(--text-primary);
+        font-size: 1.8em;
+        font-weight: 600;
+    }
+
+    .consultation-meta {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .consultation-meta span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: 500;
+    }
+
+    .consultation-type {
+        background: rgba(0, 191, 166, 0.2);
+        color: var(--primary-color);
+    }
+
+    .consultation-urgency.urgency-high {
+        background: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+    }
+
+    .consultation-urgency.urgency-medium {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+    }
+
+    .consultation-urgency.urgency-low {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+
+    .consultation-status.status-pending {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+    }
+
+    .consultation-status.status-responded {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+
+    .consultation-status.status-closed {
+        background: rgba(108, 117, 125, 0.2);
+        color: #6c757d;
+    }
+
+    .consultation-date {
+        color: var(--text-secondary);
+        font-size: 0.9em;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .consultation-section {
+        margin-bottom: 30px;
+    }
+
+    .consultation-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .consultation-section h3 {
+        margin: 0 0 15px 0;
+        color: var(--text-primary);
+        font-size: 1.2em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .consultation-section h3 i {
+        color: var(--primary-color);
+    }
+
+    .consultation-text {
+        color: var(--text-primary);
+        line-height: 1.6;
+        background: var(--bg-secondary);
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .attachment-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .attachment-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        background: var(--bg-secondary);
+        border-radius: 10px;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .attachment-item i {
+        color: var(--primary-color);
+        font-size: 1.2em;
+    }
+
+    .attachment-item span {
+        flex: 1;
+        color: var(--text-primary);
+    }
+
+    .btn-download {
+        background: var(--primary-color);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.9em;
+        transition: all 0.3s ease;
+    }
+
+    .btn-download:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+    }
+
+    .response-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .response-header h3 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 1.3em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .response-header h3 i {
+        color: var(--primary-color);
+    }
+
+    .response-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        text-align: left;
+    }
+
+    .response-meta span {
+        color: var(--text-secondary);
+        font-size: 0.9em;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .response-text {
+        color: var(--text-primary);
+        line-height: 1.6;
+        background: var(--bg-secondary);
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .consultation-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .patient-info,
+    .consultation-info,
+    .quick-actions {
+        background: var(--bg-glass);
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .patient-info h3,
+    .consultation-info h3,
+    .quick-actions h3 {
+        margin: 0 0 20px 0;
+        color: var(--text-primary);
+        font-size: 1.2em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .patient-info h3 i,
+    .consultation-info h3 i,
+    .quick-actions h3 i {
+        color: var(--primary-color);
+    }
+
+    .patient-details {
+        text-align: center;
+    }
+
+    .patient-avatar {
+        margin-bottom: 15px;
+    }
+
+    .avatar-image {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--primary-color);
+    }
+
+    .patient-meta h4 {
+        margin: 0 0 10px 0;
+        color: var(--text-primary);
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
+    .patient-meta p {
+        margin: 0 0 8px 0;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .info-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .info-item label {
+        color: var(--text-secondary);
+        font-size: 0.9em;
+        font-weight: 500;
+    }
+
+    .info-item span {
+        color: var(--text-primary);
+        font-size: 1em;
+        font-weight: 400;
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn-action {
+        padding: 12px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        text-align: center;
+        font-size: 0.9em;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-action.primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-action.primary:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+    }
+
+    .btn-action.secondary {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        border: 2px solid rgba(0, 191, 166, 0.3);
+    }
+
+    .btn-action.secondary:hover {
+        background: var(--bg-card);
+        transform: translateY(-2px);
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        padding: 12px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.9em;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        border: 2px solid rgba(0, 191, 166, 0.3);
+    }
+
+    .btn-secondary:hover {
+        background: var(--bg-card);
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .consultation-content {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .header-content {
+            flex-direction: column;
+            gap: 20px;
+            text-align: center;
+        }
+
+        .header-actions {
+            justify-content: center;
+        }
+
+        .consultation-header {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .consultation-meta {
+            justify-content: center;
+        }
+
+        .response-header {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .response-meta {
+            text-align: center;
+        }
+    }
+</style>
+
+<script>
+    function markAsUrgent(consultationId) {
+        if (confirm('هل تريد وضع علامة عاجل على هذه الاستشارة؟')) {
+            // Implement urgent marking functionality
+            fetch(`/consultations/${consultationId}/mark-urgent`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('حدث خطأ أثناء وضع العلامة');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء وضع العلامة');
+                });
+        }
+    }
+
+    function requestMoreInfo(consultationId) {
+        const info = prompt('ما هي المعلومات الإضافية المطلوبة؟');
+        if (info) {
+            // Implement request more info functionality
+            fetch(`/consultations/${consultationId}/request-info`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ info: info })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('تم إرسال طلب المعلومات الإضافية');
+                    } else {
+                        alert('حدث خطأ أثناء إرسال الطلب');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء إرسال الطلب');
+                });
+        }
+    }
+</script>
+{% endblock %}

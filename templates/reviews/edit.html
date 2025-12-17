@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}تعديل المراجعة - دوائي{% endblock %}
+
+{% block content %}
+<div class="edit-review-container">
+    <div class="page-header">
+        <h1><i class="fas fa-edit"></i> تعديل المراجعة</h1>
+        <p>تعديل مراجعتك للصيدليات والمنتجات</p>
+    </div>
+
+    <div class="review-form-container">
+        <form method="POST" class="review-form">
+            <div class="form-section">
+                <h3><i class="fas fa-info-circle"></i> معلومات المراجعة</h3>
+
+                <div class="form-group">
+                    <label for="pharmacy_id" class="form-label">
+                        <i class="fas fa-store"></i> الصيدلية
+                    </label>
+                    <select name="pharmacy_id" id="pharmacy_id" class="form-select" disabled>
+                        {% if review.pharmacy %}
+                            <option value="{{ review.pharmacy.id }}" selected>{{ review.pharmacy.name }}</option>
+                        {% else %}
+                            <option value="">لم يتم اختيار صيدلية</option>
+                        {% endif %}
+                    </select>
+                    <small class="form-help">لا يمكن تغيير الصيدلية بعد إنشاء المراجعة</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="product_id" class="form-label">
+                        <i class="fas fa-pills"></i> المنتج
+                    </label>
+                    <select name="product_id" id="product_id" class="form-select" disabled>
+                        {% if review.product %}
+                            <option value="{{ review.product.id }}" selected>{{ review.product.name }}</option>
+                        {% else %}
+                            <option value="">لم يتم اختيار منتج</option>
+                        {% endif %}
+                    </select>
+                    <small class="form-help">لا يمكن تغيير المنتج بعد إنشاء المراجعة</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="rating" class="form-label">
+                        <i class="fas fa-star"></i> التقييم *
+                    </label>
+                    <div class="rating-input">
+                        <input type="radio" name="rating" value="1" id="rating1" {% if review.rating == 1 %}checked{% endif %} required>
+                        <label for="rating1" class="star-label">★</label>
+                        
+                        <input type="radio" name="rating" value="2" id="rating2" {% if review.rating == 2 %}checked{% endif %} required>
+                        <label for="rating2" class="star-label">★</label>
+                        
+                        <input type="radio" name="rating" value="3" id="rating3" {% if review.rating == 3 %}checked{% endif %} required>
+                        <label for="rating3" class="star-label">★</label>
+                        
+                        <input type="radio" name="rating" value="4" id="rating4" {% if review.rating == 4 %}checked{% endif %} required>
+                        <label for="rating4" class="star-label">★</label>
+                        
+                        <input type="radio" name="rating" value="5" id="rating5" {% if review.rating == 5 %}checked{% endif %} required>
+                        <label for="rating5" class="star-label">★</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="title" class="form-label">
+                        <i class="fas fa-heading"></i> عنوان المراجعة
+                    </label>
+                    <input type="text" name="title" id="title" class="form-input" 
+                           value="{{ review.title or '' }}"
+                           placeholder="اكتب عنواناً مختصراً للمراجعة">
+                </div>
+
+                <div class="form-group">
+                    <label for="comment" class="form-label">
+                        <i class="fas fa-comment"></i> تعليقك *
+                    </label>
+                    <textarea name="comment" id="comment" class="form-textarea" rows="5" 
+                              placeholder="شارك تفاصيل تجربتك..." required>{{ review.comment or '' }}</textarea>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> حفظ التغييرات
+                </button>
+                <a href="{{ url_for('reviews_list') }}" class="btn btn-outline">
+                    <i class="fas fa-times"></i> إلغاء
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.rating-input {
+    display: flex;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.rating-input input[type="radio"] {
+    display: none;
+}
+
+.star-label {
+    font-size: 24px;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.rating-input input[type="radio"]:checked ~ .star-label,
+.rating-input input[type="radio"]:checked + .star-label,
+.star-label:hover {
+    color: #ffc107;
+}
+
+.rating-input input[type="radio"]:checked ~ .star-label {
+    color: #ffc107;
+}
+
+.rating-input input[type="radio"]:checked + .star-label {
+    color: #ffc107;
+}
+
+.form-help {
+    color: #888;
+    font-size: 0.9em;
+    margin-top: 5px;
+    display: block;
+}
+</style>
+
+<script>
+// تحسين تجربة التقييم
+document.addEventListener('DOMContentLoaded', function() {
+    const starLabels = document.querySelectorAll('.star-label');
+    
+    // تعيين الألوان الأولية
+    const checkedInput = document.querySelector('input[name="rating"]:checked');
+    if (checkedInput) {
+        const checkedIndex = parseInt(checkedInput.value) - 1;
+        starLabels.forEach((label, index) => {
+            label.style.color = index <= checkedIndex ? '#ffc107' : '#ddd';
+        });
+    }
+    
+    starLabels.forEach((label, index) => {
+        label.addEventListener('click', function() {
+            // إزالة التحديد من جميع النجوم
+            document.querySelectorAll('input[name="rating"]').forEach(input => {
+                input.checked = false;
+            });
+            
+            // تحديد النجوم حتى النجمة المختارة
+            for (let i = 0; i <= index; i++) {
+                document.getElementById(`rating${i + 1}`).checked = true;
+            }
+        });
+        
+        label.addEventListener('mouseenter', function() {
+            // إضاءة النجوم عند التمرير
+            for (let i = 0; i <= index; i++) {
+                starLabels[i].style.color = '#ffc107';
+            }
+        });
+    });
+    
+    // إعادة تعيين الألوان عند مغادرة الماوس
+    document.querySelector('.rating-input').addEventListener('mouseleave', function() {
+        const checkedInput = document.querySelector('input[name="rating"]:checked');
+        if (checkedInput) {
+            const checkedIndex = parseInt(checkedInput.value) - 1;
+            starLabels.forEach((label, index) => {
+                label.style.color = index <= checkedIndex ? '#ffc107' : '#ddd';
+            });
+        } else {
+            starLabels.forEach(label => {
+                label.style.color = '#ddd';
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

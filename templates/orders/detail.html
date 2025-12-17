@@ -1,0 +1,768 @@
+{% extends "base.html" %}
+
+{% block title %}تفاصيل الطلب {{ order.order_number }} - دوائي{% endblock %}
+
+{% block content %}
+<div class="order-detail-container">
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-info">
+                <h1><i class="fas fa-shopping-cart"></i> طلب رقم: {{ order.order_number }}</h1>
+                <p>تفاصيل الطلب</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('orders_list') }}" class="btn-secondary">
+                    <i class="fas fa-arrow-right"></i> العودة للقائمة
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="order-detail-content">
+        <div class="order-main">
+            <div class="order-info-section">
+                <div class="info-card">
+                    <h3><i class="fas fa-info-circle"></i> معلومات الطلب</h3>
+                    <div class="info-content">
+                        <div class="info-item">
+                            <span class="label">رقم الطلب:</span>
+                            <span class="value">{{ order.order_number }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">تاريخ الطلب:</span>
+                            <span class="value">{% if order.created_at %}{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}{% else %}غير محدد{% endif %}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">حالة الطلب:</span>
+                            <span class="value status-badge status-{{ order.status }}">
+                                {{ order.get_status_arabic() }}
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">طريقة الدفع:</span>
+                            <span class="value">{{ order.payment_method }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">حالة الدفع:</span>
+                            <span class="value">{{ order.payment_status }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <h3><i class="fas fa-store"></i> معلومات الصيدلية</h3>
+                    <div class="info-content">
+                        <div class="info-item">
+                            <span class="label">اسم الصيدلية:</span>
+                            <span class="value">{{ order.pharmacy.name }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">العنوان:</span>
+                            <span class="value">{{ order.pharmacy.address }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">الهاتف:</span>
+                            <span class="value">{{ order.pharmacy.phone }}</span>
+                        </div>
+                        {% if order.pharmacy.email %}
+                        <div class="info-item">
+                            <span class="label">البريد الإلكتروني:</span>
+                            <span class="value">{{ order.pharmacy.email }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <h3><i class="fas fa-map-marker-alt"></i> معلومات التوصيل</h3>
+                    <div class="info-content">
+                        <div class="info-item">
+                            <span class="label">عنوان التوصيل:</span>
+                            <span class="value">{{ order.delivery_address }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">هاتف التوصيل:</span>
+                            <span class="value">{{ order.delivery_phone }}</span>
+                        </div>
+                        {% if order.delivery_notes %}
+                        <div class="info-item">
+                            <span class="label">ملاحظات التوصيل:</span>
+                            <span class="value">{{ order.delivery_notes }}</span>
+                        </div>
+                        {% endif %}
+                        {% if order.estimated_delivery_time %}
+                        <div class="info-item">
+                            <span class="label">الوقت المتوقع للتوصيل:</span>
+                            <span class="value">{% if order.estimated_delivery_time %}{{ order.estimated_delivery_time.strftime('%Y-%m-%d %H:%M') }}{% else %}غير محدد{% endif %}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="order-items-section">
+                <div class="items-card">
+                    <h3><i class="fas fa-boxes"></i> منتجات الطلب</h3>
+                    <div class="items-list">
+                        {% for item in order.items %}
+                        <div class="item-row">
+                            <div class="item-info">
+                                <h4>{{ item.pharmacy_product.name }}</h4>
+                                {% if item.pharmacy_product.generic_name %}
+                                <p class="generic-name">{{ item.pharmacy_product.generic_name }}</p>
+                                {% endif %}
+                                <div class="item-details">
+                                    <span class="form">{{ item.pharmacy_product.form }}</span>
+                                    {% if item.pharmacy_product.strength %}
+                                    <span class="strength">{{ item.pharmacy_product.strength }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="item-quantity">
+                                <span class="quantity">{{ item.quantity }}</span>
+                            </div>
+                            <div class="item-price">
+                                <span class="unit-price">{{ "%.2f"|format(item.unit_price) }} ريال</span>
+                                <span class="total-price">{{ "%.2f"|format(item.total_price) }} ريال</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="order-summary">
+                    <div class="summary-item">
+                        <span class="label">المجموع الفرعي:</span>
+                        <span class="value">{{ "%.2f"|format(order.subtotal) }} ريال</span>
+                    </div>
+                    {% if order.delivery_fee > 0 %}
+                    <div class="summary-item">
+                        <span class="label">رسوم التوصيل:</span>
+                        <span class="value">{{ "%.2f"|format(order.delivery_fee) }} ريال</span>
+                    </div>
+                    {% endif %}
+                    {% if order.tax_amount > 0 %}
+                    <div class="summary-item">
+                        <span class="label">الضريبة:</span>
+                        <span class="value">{{ "%.2f"|format(order.tax_amount) }} ريال</span>
+                    </div>
+                    {% endif %}
+                    <div class="summary-item total">
+                        <span class="label">المجموع الكلي:</span>
+                        <span class="value">{{ "%.2f"|format(order.total_amount) }} ريال</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if tracking %}
+        <div class="tracking-section">
+            <div class="tracking-card">
+                <h3><i class="fas fa-route"></i> تتبع الطلب</h3>
+                <div class="tracking-timeline">
+                    {% for track in tracking %}
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h4>{{ track.status }}</h4>
+                            <p>{{ track.description }}</p>
+                            <span class="timeline-date">{% if track.timestamp %}{{ track.timestamp.strftime('%Y-%m-%d %H:%M') }}{% else %}غير محدد{% endif %}</span>
+                            {% if track.updated_by %}
+                            <span class="timeline-user">بواسطة: {{ track.updated_by }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="order-actions-section">
+            <div class="actions-card">
+                <h3><i class="fas fa-cogs"></i> إجراءات الطلب</h3>
+                <div class="actions-content">
+                    {% if order.status in ['pending', 'confirmed', 'preparing'] %}
+                    <form method="POST" action="{{ url_for('cancel_order', order_id=order.id) }}" class="cancel-form"
+                        onsubmit="return confirm('هل أنت متأكد من إلغاء هذا الطلب؟')">
+                        <button type="submit" class="btn-cancel">
+                            <i class="fas fa-times"></i> إلغاء الطلب
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    {% if order.status == 'delivered' %}
+                    <button class="btn-rate" onclick="rateOrder({{ order.id }})">
+                        <i class="fas fa-star"></i> تقييم الطلب
+                    </button>
+                    {% endif %}
+
+                    <a href="tel:{{ order.pharmacy.phone }}" class="btn-call">
+                        <i class="fas fa-phone"></i> الاتصال بالصيدلية
+                    </a>
+
+                    <button class="btn-print" onclick="window.print()">
+                        <i class="fas fa-print"></i> طباعة الطلب
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .order-detail-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 30px;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-info h1 {
+        margin: 0 0 10px 0;
+        color: var(--text-primary);
+        font-size: 2.2em;
+        font-weight: 700;
+    }
+
+    .header-info p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 1.1em;
+    }
+
+    .header-info i {
+        margin-left: 10px;
+        color: var(--primary-color);
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 15px;
+    }
+
+    .order-detail-content {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .order-main {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    .order-info-section {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .info-card {
+        background: var(--bg-glass);
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .info-card h3 {
+        margin: 0 0 20px 0;
+        color: var(--text-primary);
+        font-size: 1.3em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-card h3 i {
+        color: var(--primary-color);
+    }
+
+    .info-content {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(0, 191, 166, 0.1);
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-item .label {
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .info-item .value {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-pending {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+    }
+
+    .status-confirmed {
+        background: rgba(23, 162, 184, 0.2);
+        color: #17a2b8;
+    }
+
+    .status-preparing {
+        background: rgba(0, 191, 166, 0.2);
+        color: var(--primary-color);
+    }
+
+    .status-ready {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+
+    .status-out_for_delivery {
+        background: rgba(111, 66, 193, 0.2);
+        color: #6f42c1;
+    }
+
+    .status-delivered {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+
+    .status-cancelled {
+        background: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+    }
+
+    .order-items-section {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .items-card {
+        background: var(--bg-glass);
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .items-card h3 {
+        margin: 0 0 20px 0;
+        color: var(--text-primary);
+        font-size: 1.3em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .items-card h3 i {
+        color: var(--primary-color);
+    }
+
+    .items-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .item-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr;
+        gap: 20px;
+        padding: 15px;
+        background: var(--bg-secondary);
+        border-radius: 10px;
+        border: 1px solid rgba(0, 191, 166, 0.1);
+        align-items: center;
+    }
+
+    .item-info h4 {
+        margin: 0 0 5px 0;
+        color: var(--text-primary);
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
+    .generic-name {
+        margin: 0 0 10px 0;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+        font-style: italic;
+    }
+
+    .item-details {
+        display: flex;
+        gap: 10px;
+    }
+
+    .item-details .form,
+    .item-details .strength {
+        background: var(--bg-card);
+        color: var(--text-primary);
+        padding: 2px 6px;
+        border-radius: 8px;
+        font-size: 0.8em;
+        font-weight: 500;
+    }
+
+    .item-quantity {
+        text-align: center;
+    }
+
+    .quantity {
+        background: var(--primary-color);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 1.1em;
+    }
+
+    .item-price {
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .unit-price {
+        color: var(--text-secondary);
+        font-size: 0.9em;
+    }
+
+    .total-price {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 1.1em;
+    }
+
+    .order-summary {
+        background: var(--bg-secondary);
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(0, 191, 166, 0.1);
+    }
+
+    .summary-item:last-child {
+        border-bottom: none;
+    }
+
+    .summary-item.total {
+        border-top: 2px solid var(--primary-color);
+        margin-top: 10px;
+        padding-top: 15px;
+        font-weight: 700;
+        font-size: 1.2em;
+    }
+
+    .summary-item .label {
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .summary-item .value {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .tracking-section {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .tracking-card h3 {
+        margin: 0 0 25px 0;
+        color: var(--text-primary);
+        font-size: 1.4em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .tracking-card h3 i {
+        color: var(--primary-color);
+    }
+
+    .tracking-timeline {
+        position: relative;
+        padding-right: 30px;
+    }
+
+    .tracking-timeline::before {
+        content: '';
+        position: absolute;
+        right: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--primary-color);
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 25px;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        right: -22px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        border: 3px solid var(--bg-glass);
+    }
+
+    .timeline-content {
+        background: var(--bg-secondary);
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .timeline-content h4 {
+        margin: 0 0 10px 0;
+        color: var(--text-primary);
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
+    .timeline-content p {
+        margin: 0 0 10px 0;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+    }
+
+    .timeline-date {
+        color: var(--text-muted);
+        font-size: 0.8em;
+    }
+
+    .timeline-user {
+        color: var(--text-muted);
+        font-size: 0.8em;
+        margin-right: 10px;
+    }
+
+    .order-actions-section {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .actions-card h3 {
+        margin: 0 0 25px 0;
+        color: var(--text-primary);
+        font-size: 1.4em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .actions-card h3 i {
+        color: var(--primary-color);
+    }
+
+    .actions-content {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .btn-cancel,
+    .btn-rate,
+    .btn-call,
+    .btn-print {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-cancel {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-cancel:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+    }
+
+    .btn-rate {
+        background: #ffc107;
+        color: #212529;
+    }
+
+    .btn-rate:hover {
+        background: #e0a800;
+        transform: translateY(-2px);
+    }
+
+    .btn-call {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-call:hover {
+        background: #218838;
+        transform: translateY(-2px);
+    }
+
+    .btn-print {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .btn-print:hover {
+        background: #138496;
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        padding: 12px 20px;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 0.9em;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 2px solid rgba(0, 191, 166, 0.3);
+    }
+
+    .btn-secondary:hover {
+        background: var(--bg-card);
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .header-content {
+            flex-direction: column;
+            gap: 20px;
+            text-align: center;
+        }
+
+        .order-main {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .item-row {
+            grid-template-columns: 1fr;
+            gap: 10px;
+            text-align: center;
+        }
+
+        .actions-content {
+            justify-content: center;
+        }
+    }
+</style>
+
+<script>
+    function rateOrder(orderId) {
+        const rating = prompt('قيم هذا الطلب من 1 إلى 5:');
+        if (rating && rating >= 1 && rating <= 5) {
+            showNotification('تم إرسال التقييم بنجاح', 'success');
+        }
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+
+        notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+    `;
+
+        if (type === 'success') {
+            notification.style.background = '#28a745';
+        } else {
+            notification.style.background = '#dc3545';
+        }
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+</script>
+{% endblock %}

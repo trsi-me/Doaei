@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}التحليلات - دوائي{% endblock %}
+
+{% block content %}
+<div class="admin-analytics-container">
+    <div class="page-header">
+        <h1><i class="fas fa-chart-bar" style="color: #42A5F5;"></i> التحليلات</h1>
+        <p>تحليل شامل لبيانات النظام</p>
+    </div>
+
+    <!-- إحصائيات المستخدمين -->
+    <div class="analytics-section">
+        <h2 class="section-title"><i class="fas fa-users"></i> إحصائيات المستخدمين</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-users" style="color: #4FC3F7;"></i></div>
+                <div class="stat-content">
+                    <h3>{{ stats.total_users }}</h3>
+                    <p>إجمالي المستخدمين</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-user-injured" style="color: #81C784;"></i></div>
+                <div class="stat-content">
+                    <h3>{{ stats.total_patients }}</h3>
+                    <p>المرضى</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-user-md" style="color: #00BFA5;"></i></div>
+                <div class="stat-content">
+                    <h3>{{ stats.total_doctors }}</h3>
+                    <p>الأطباء</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-pills" style="color: #FF6B6B;"></i></div>
+                <div class="stat-content">
+                    <h3>{{ stats.total_pharmacists }}</h3>
+                    <p>الصيادلة</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-user-check" style="color: #66BB6A;"></i></div>
+                <div class="stat-content">
+                    <h3>{{ stats.active_users }}</h3>
+                    <p>المستخدمين النشطين</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- إحصائيات النظام -->
+    <div class="analytics-section">
+        <h2 class="section-title"><i class="fas fa-cog"></i> إحصائيات النظام</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-pills" style="color: #EF5350;"></i></div>
+                <div class="stat-content">
+                    <h3>{{ stats.total_medications }}</h3>
+                    <p>الأدوية النشطة</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-store" style="color: #42A5F5;"></i></div>
+                <div class="stat-content">
+                    <h3>{{ stats.total_pharmacies }}</h3>
+                    <p>الصيدليات النشطة</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-shopping-cart" style="color: #AB47BC;"></i></div>
+                <div class="stat-content">
+                    <h3>{{ stats.total_orders }}</h3>
+                    <p>إجمالي الطلبات</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-clock" style="color: #FFB74D;"></i></div>
+                <div class="stat-content">
+                    <h3>{{ stats.pending_orders }}</h3>
+                    <p>الطلبات المعلقة</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-comments" style="color: #4ECDC4;"></i></div>
+                <div class="stat-content">
+                    <h3>{{ stats.pending_consultations }}</h3>
+                    <p>الاستشارات المعلقة</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-star" style="color: #FFD54F;"></i></div>
+                <div class="stat-content">
+                    <h3>{{ stats.total_reviews }}</h3>
+                    <p>المراجعات</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الإحصائيات المالية -->
+    <div class="analytics-section">
+        <h2 class="section-title"><i class="fas fa-chart-pie"></i> الإحصائيات المالية</h2>
+        <div class="financial-stats">
+            <div class="financial-card income">
+                <h3>{{ "{:,.2f}".format(stats.total_income) }} ريال</h3>
+                <p>إجمالي الدخل</p>
+            </div>
+            <div class="financial-card expense">
+                <h3>{{ "{:,.2f}".format(stats.total_expenses) }} ريال</h3>
+                <p>إجمالي المصروفات</p>
+            </div>
+            <div class="financial-card profit">
+                <h3 class="{% if stats.total_profit >= 0 %}positive{% else %}negative{% endif %}">
+                    {{ "{:,.2f}".format(stats.total_profit) }} ريال
+                </h3>
+                <p>صافي الأرباح</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .admin-analytics-container {
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .page-header h1 {
+        margin: 0 0 10px 0;
+        color: #333;
+    }
+
+    .analytics-section {
+        margin-bottom: 40px;
+    }
+
+    .section-title {
+        font-size: 1.5em;
+        margin-bottom: 20px;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .stat-icon {
+        font-size: 2.5em;
+    }
+
+    .stat-content h3 {
+        margin: 0;
+        font-size: 2em;
+        color: #333;
+    }
+
+    .stat-content p {
+        margin: 5px 0 0 0;
+        color: #666;
+    }
+
+    .financial-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .financial-card {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .financial-card.income { border-top: 3px solid #66BB6A; }
+    .financial-card.expense { border-top: 3px solid #EF5350; }
+    .financial-card.profit { border-top: 3px solid #42A5F5; }
+
+    .financial-card h3 {
+        margin: 0 0 10px 0;
+        font-size: 2em;
+        color: #333;
+    }
+
+    .financial-card h3.positive { color: #66BB6A; }
+    .financial-card h3.negative { color: #EF5350; }
+
+    .financial-card p {
+        margin: 0;
+        color: #666;
+    }
+</style>
+{% endblock %}
+

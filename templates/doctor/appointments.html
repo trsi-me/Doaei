@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}قائمة المواعيد - دوائي{% endblock %}
+
+{% block content %}
+<div class="doctor-appointments-container">
+    <div class="page-header">
+        <h1><i class="fas fa-calendar-check" style="color: #FFB74D;"></i> قائمة المواعيد</h1>
+        <a href="{{ url_for('doctor_add_appointment') }}" class="btn btn-primary">إضافة موعد جديد</a>
+    </div>
+
+    <div class="appointments-section">
+        {% if appointments %}
+        <div class="appointments-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>الوقت</th>
+                        <th>المريض</th>
+                        <th>السبب</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appointment in appointments %}
+                    <tr>
+                        <td>{{ appointment[3] if appointment[3] else 'غير محدد' }}</td>
+                        <td>{{ appointment[4] if appointment[4] else 'غير محدد' }}</td>
+                        <td>{{ appointment[9] if appointment[9] else 'غير محدد' }}</td>
+                        <td>{{ appointment[5][:50] if appointment[5] else '-' }}...</td>
+                        <td>
+                            <span class="status-badge status-{{ appointment[7] if appointment[7] else 'scheduled' }}">
+                                {{ appointment[7] if appointment[7] else 'مجدول' }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye"></i> عرض
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-calendar-check" style="font-size: 4em; color: #ccc;"></i>
+            <p>لا توجد مواعيد</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .doctor-appointments-container {
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        color: #333;
+    }
+
+    .appointments-table {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead {
+        background: #f5f5f5;
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: right;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    th {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .status-badge {
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 0.9em;
+        font-weight: 500;
+    }
+
+    .status-scheduled { background: #FFB74D; color: white; }
+    .status-confirmed { background: #66BB6A; color: white; }
+    .status-cancelled { background: #EF5350; color: white; }
+    .status-completed { background: #42A5F5; color: white; }
+
+    .btn {
+        padding: 8px 16px;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-primary {
+        background: #42A5F5;
+        color: white;
+    }
+
+    .btn-sm {
+        padding: 5px 10px;
+        font-size: 0.9em;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+    }
+</style>
+{% endblock %}
+

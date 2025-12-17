@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}الاستشارات - دوائي{% endblock %}
+
+{% block content %}
+<div class="consultations-container">
+    <div class="page-header">
+        <h1><i class="fas fa-comments"></i> الاستشارات</h1>
+        <p>إدارة استشاراتك الطبية مع الصيادلة</p>
+        <a href="{{ url_for('add_consultation') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> طلب استشارة جديدة
+        </a>
+    </div>
+
+    <div class="consultations-list">
+        {% if consultations.items %}
+        {% for consultation in consultations.items %}
+        <div class="consultation-card">
+            <div class="consultation-header">
+                <div class="consultation-status">
+                    <span class="status-badge status-{{ consultation.status }}">
+                        {% if consultation.status == 'pending' %}
+                        <i class="fas fa-clock"></i> في الانتظار
+                        {% elif consultation.status == 'in_progress' %}
+                        <i class="fas fa-spinner"></i> قيد المراجعة
+                        {% elif consultation.status == 'completed' %}
+                        <i class="fas fa-check"></i> مكتملة
+                        {% elif consultation.status == 'closed' %}
+                        <i class="fas fa-times"></i> مغلقة
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="consultation-date">
+                    {% if consultation.created_at %}{{ consultation.created_at.strftime('%Y-%m-%d %H:%M') }}{% else %}غير محدد{% endif %}
+                </div>
+            </div>
+
+            <div class="consultation-content">
+                <h3>{{ consultation.subject }}</h3>
+
+                {% if consultation.category %}
+                <p class="consultation-category">
+                    <i class="fas fa-tag"></i> الفئة: {{ consultation.category }}
+                </p>
+                {% endif %}
+
+                <p class="consultation-priority">
+                    <i class="fas fa-exclamation-triangle"></i> الأولوية:
+                    <span class="priority-{{ consultation.priority }}">
+                        {% if consultation.priority == 'low' %}
+                        منخفضة
+                        {% elif consultation.priority == 'medium' %}
+                        متوسطة
+                        {% elif consultation.priority == 'high' %}
+                        عالية
+                        {% elif consultation.priority == 'urgent' %}
+                        عاجلة
+                        {% endif %}
+                    </span>
+                </p>
+
+                <p class="consultation-message">{{ consultation.message[:200] }}{% if consultation.message|length > 200
+                    %}...{% endif %}</p>
+
+                {% if consultation.reply %}
+                <div class="consultation-response">
+                    <h4><i class="fas fa-reply"></i> الرد:</h4>
+                    <p>{{ consultation.reply[:200] }}{% if consultation.reply|length > 200 %}...{% endif %}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="consultation-actions">
+                <a href="{{ url_for('view_consultation', consultation_id=consultation.id) }}"
+                    class="btn btn-sm btn-primary">
+                    <i class="fas fa-eye"></i> عرض التفاصيل
+                </a>
+
+                {% if consultation.status == 'completed' and consultation.patient_id == current_user.id %}
+                <button onclick="closeConsultation({{ consultation.id }})" class="btn btn-sm btn-outline">
+                    <i class="fas fa-times"></i> إغلاق
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Pagination -->
+        {% if consultations.pages > 1 %}
+        <div class="pagination">
+            {% if consultations.has_prev %}
+            <a href="{{ url_for('consultations', page=consultations.prev_num) }}" class="btn btn-outline">
+                <i class="fas fa-chevron-right"></i> السابق
+            </a>
+            {% endif %}
+
+            <span class="page-info">
+                صفحة {{ consultations.page }} من {{ consultations.pages }}
+            </span>
+
+            {% if consultations.has_next %}
+            <a href="{{ url_for('consultations', page=consultations.next_num) }}" class="btn btn-outline">
+                التالي <i class="fas fa-chevron-left"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-comments"></i>
+            <h3>لا توجد استشارات</h3>
+            <p>لم تقم بطلب أي استشارات بعد</p>
+            <a href="{{ url_for('add_consultation') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> طلب أول استشارة
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: 500;
+    }
+
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .status-in_progress {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .status-completed {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-closed {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .priority-low {
+        color: #28a745;
+    }
+
+    .priority-medium {
+        color: #ffc107;
+    }
+
+    .priority-high {
+        color: #fd7e14;
+    }
+
+    .priority-urgent {
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .consultation-response {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+        border-left: 4px solid #007bff;
+    }
+</style>
+
+<script>
+    function closeConsultation(consultationId) {
+        if (confirm('هل أنت متأكد من إغلاق هذه الاستشارة؟')) {
+            fetch(`/consultations/${consultationId}/close`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message || 'حدث خطأ أثناء إغلاق الاستشارة');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء إغلاق الاستشارة');
+                });
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,706 @@
+{% extends "base.html" %}
+
+{% block title %}الإشعارات - دوائي{% endblock %}
+
+{% block content %}
+<div class="notifications-container">
+    <div class="page-header">
+        <h1><i class="fas fa-bell"></i> الإشعارات</h1>
+        <p>إدارة الإشعارات والتذكيرات</p>
+    </div>
+
+    <div class="notifications-content">
+        <div class="notifications-filters">
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">
+                    <i class="fas fa-list"></i> جميع الإشعارات
+                </button>
+                <button class="filter-tab" data-filter="unread">
+                    <i class="fas fa-envelope"></i> غير المقروءة
+                </button>
+                <button class="filter-tab" data-filter="medication">
+                    <i class="fas fa-pills"></i> الأدوية
+                </button>
+                <button class="filter-tab" data-filter="appointment">
+                    <i class="fas fa-calendar"></i> المواعيد
+                </button>
+                <button class="filter-tab" data-filter="system">
+                    <i class="fas fa-cog"></i> النظام
+                </button>
+            </div>
+
+            <div class="filter-controls">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="البحث في الإشعارات...">
+                </div>
+                <button class="btn-mark-all" onclick="markAllAsRead()">
+                    <i class="fas fa-check-double"></i> تعيين الكل كمقروء
+                </button>
+                <button class="btn-clear-all" onclick="clearAllNotifications()">
+                    <i class="fas fa-trash"></i> مسح الكل
+                </button>
+            </div>
+        </div>
+
+        <div class="notifications-list" id="notificationsList">
+            <!-- سيتم تحميل الإشعارات هنا -->
+        </div>
+
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-icon">
+                <i class="fas fa-bell-slash"></i>
+            </div>
+            <h3>لا توجد إشعارات</h3>
+            <p>لم يتم العثور على أي إشعارات مطابقة للبحث</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .notifications-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 30px;
+        text-align: center;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .page-header h1 {
+        margin: 0 0 10px 0;
+        color: var(--text-primary);
+        font-size: 2.2em;
+        font-weight: 700;
+    }
+
+    .page-header p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 1.1em;
+    }
+
+    .page-header i {
+        margin-left: 10px;
+        color: var(--primary-color);
+    }
+
+    .notifications-content {
+        background: var(--bg-glass);
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        overflow: hidden;
+    }
+
+    .notifications-filters {
+        padding: 30px;
+        border-bottom: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .filter-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .filter-tab {
+        padding: 12px 20px;
+        border: 2px solid rgba(0, 191, 166, 0.3);
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-tab:hover {
+        border-color: var(--primary-color);
+        background: var(--bg-glass);
+    }
+
+    .filter-tab.active {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .filter-controls {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .search-box {
+        position: relative;
+        flex: 1;
+        min-width: 250px;
+    }
+
+    .search-box i {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 12px 45px 12px 15px;
+        border: 2px solid rgba(0, 191, 166, 0.3);
+        border-radius: 8px;
+        font-size: 16px;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+    }
+
+    .search-box input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(0, 191, 166, 0.1);
+    }
+
+    .btn-mark-all,
+    .btn-clear-all {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-mark-all {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-mark-all:hover {
+        background: #218838;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-clear-all {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-clear-all:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .notifications-list {
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .notification-item {
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid rgba(0, 191, 166, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .notification-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary-color);
+    }
+
+    .notification-item.unread {
+        border-color: var(--primary-color);
+        background: rgba(0, 191, 166, 0.05);
+    }
+
+    .notification-item.unread::before {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--primary-color);
+        border-radius: 0 12px 12px 0;
+    }
+
+    .notification-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 10px;
+    }
+
+    .notification-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .notification-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2em;
+    }
+
+    .icon-medication {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .icon-appointment {
+        background: #ffc107;
+        color: #212529;
+    }
+
+    .icon-system {
+        background: #6c757d;
+        color: white;
+    }
+
+    .icon-reminder {
+        background: #28a745;
+        color: white;
+    }
+
+    .notification-content h3 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
+    .notification-meta {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-size: 0.8em;
+        color: var(--text-muted);
+    }
+
+    .notification-time {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .notification-type {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.7em;
+        font-weight: 500;
+    }
+
+    .type-medication {
+        background: rgba(23, 162, 184, 0.2);
+        color: #17a2b8;
+    }
+
+    .type-appointment {
+        background: rgba(255, 193, 7, 0.2);
+        color: #856404;
+    }
+
+    .type-system {
+        background: rgba(108, 117, 125, 0.2);
+        color: #6c757d;
+    }
+
+    .type-reminder {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+
+    .notification-body {
+        margin-top: 10px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+    }
+
+    .notification-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .notification-item:hover .notification-actions {
+        opacity: 1;
+    }
+
+    .btn-action {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .btn-mark-read {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-mark-read:hover {
+        background: #218838;
+    }
+
+    .btn-delete {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background: #c82333;
+    }
+
+    .btn-view {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-view:hover {
+        background: var(--secondary-color);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 30px;
+    }
+
+    .empty-icon {
+        font-size: 4em;
+        color: var(--text-muted);
+        margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+        margin: 0 0 10px 0;
+        color: var(--text-primary);
+        font-size: 1.5em;
+        font-weight: 600;
+    }
+
+    .empty-state p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 1.1em;
+    }
+
+    @media (max-width: 768px) {
+        .notifications-container {
+            padding: 15px;
+        }
+
+        .notifications-filters {
+            padding: 20px;
+        }
+
+        .filter-tabs {
+            flex-direction: column;
+        }
+
+        .filter-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-box {
+            min-width: auto;
+        }
+
+        .notifications-list {
+            padding: 20px;
+        }
+
+        .notification-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .notification-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+
+        .notification-actions {
+            opacity: 1;
+            justify-content: center;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        loadNotifications();
+        setupEventListeners();
+    });
+
+    function setupEventListeners() {
+        // Filter tabs
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', function () {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                filterNotifications(this.dataset.filter);
+            });
+        });
+
+        // Search input
+        document.getElementById('searchInput').addEventListener('input', function () {
+            filterNotifications();
+        });
+    }
+
+    function loadNotifications() {
+        // في التطبيق الحقيقي، ستقوم بجلب الإشعارات من API
+        const mockNotifications = [
+            {
+                id: 1,
+                title: 'تذكير دواء',
+                body: 'حان وقت تناول دواء الباراسيتامول - الجرعة: 500 مجم',
+                type: 'medication',
+                time: '2024-12-15T10:30:00',
+                isRead: false,
+                icon: 'fas fa-pills'
+            },
+            {
+                id: 2,
+                title: 'موعد طبي',
+                body: 'لديك موعد مع د. أحمد محمد غداً في الساعة 2:00 مساءً',
+                type: 'appointment',
+                time: '2024-12-15T09:15:00',
+                isRead: false,
+                icon: 'fas fa-calendar'
+            },
+            {
+                id: 3,
+                title: 'تحديث النظام',
+                body: 'تم تحديث منصة دوائي بنجاح. استمتع بالميزات الجديدة!',
+                type: 'system',
+                time: '2024-12-14T16:45:00',
+                isRead: true,
+                icon: 'fas fa-cog'
+            },
+            {
+                id: 4,
+                title: 'تذكير فحص',
+                body: 'تذكير: موعد فحص دوري بعد أسبوع',
+                type: 'reminder',
+                time: '2024-12-14T14:20:00',
+                isRead: true,
+                icon: 'fas fa-stethoscope'
+            }
+        ];
+
+        displayNotifications(mockNotifications);
+    }
+
+    function displayNotifications(notifications) {
+        const container = document.getElementById('notificationsList');
+        const emptyState = document.getElementById('emptyState');
+
+        if (notifications.length === 0) {
+            container.style.display = 'none';
+            emptyState.style.display = 'block';
+            return;
+        }
+
+        container.style.display = 'flex';
+        emptyState.style.display = 'none';
+
+        container.innerHTML = notifications.map(notification => `
+        <div class="notification-item ${notification.isRead ? '' : 'unread'}" 
+             data-notification-id="${notification.id}" 
+             data-type="${notification.type}"
+             onclick="markAsRead(${notification.id})">
+            <div class="notification-header">
+                <div class="notification-title">
+                    <div class="notification-icon icon-${notification.type}">
+                        <i class="${notification.icon}"></i>
+                    </div>
+                    <div class="notification-content">
+                        <h3>${notification.title}</h3>
+                        <div class="notification-meta">
+                            <div class="notification-time">
+                                <i class="fas fa-clock"></i>
+                                <span>${formatTime(notification.time)}</span>
+                            </div>
+                            <div class="notification-type type-${notification.type}">
+                                ${getTypeText(notification.type)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="notification-body">
+                ${notification.body}
+            </div>
+            <div class="notification-actions">
+                ${!notification.isRead ? `
+                    <button class="btn-action btn-mark-read" onclick="event.stopPropagation(); markAsRead(${notification.id})">
+                        <i class="fas fa-check"></i> تعيين كمقروء
+                    </button>
+                ` : ''}
+                <button class="btn-action btn-view" onclick="event.stopPropagation(); viewNotification(${notification.id})">
+                    <i class="fas fa-eye"></i> عرض
+                </button>
+                <button class="btn-action btn-delete" onclick="event.stopPropagation(); deleteNotification(${notification.id})">
+                    <i class="fas fa-trash"></i> حذف
+                </button>
+            </div>
+        </div>
+    `).join('');
+    }
+
+    function getTypeText(type) {
+        const typeMap = {
+            'medication': 'دواء',
+            'appointment': 'موعد',
+            'system': 'نظام',
+            'reminder': 'تذكير'
+        };
+        return typeMap[type] || type;
+    }
+
+    function formatTime(timeString) {
+        const date = new Date(timeString);
+        const now = new Date();
+        const diff = now - date;
+
+        if (diff < 60000) { // أقل من دقيقة
+            return 'الآن';
+        } else if (diff < 3600000) { // أقل من ساعة
+            const minutes = Math.floor(diff / 60000);
+            return `منذ ${minutes} دقيقة`;
+        } else if (diff < 86400000) { // أقل من يوم
+            const hours = Math.floor(diff / 3600000);
+            return `منذ ${hours} ساعة`;
+        } else {
+            const days = Math.floor(diff / 86400000);
+            return `منذ ${days} يوم`;
+        }
+    }
+
+    function filterNotifications(filter = 'all') {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const notificationItems = document.querySelectorAll('.notification-item');
+
+        notificationItems.forEach(item => {
+            const notificationText = item.textContent.toLowerCase();
+            const matchesSearch = notificationText.includes(searchTerm);
+
+            let matchesFilter = true;
+            if (filter !== 'all') {
+                if (filter === 'unread') {
+                    matchesFilter = item.classList.contains('unread');
+                } else {
+                    matchesFilter = item.dataset.type === filter;
+                }
+            }
+
+            if (matchesSearch && matchesFilter) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    function markAsRead(notificationId) {
+        // في التطبيق الحقيقي، ستقوم بإرسال طلب لتحديث حالة الإشعار
+        const item = document.querySelector(`[data-notification-id="${notificationId}"]`);
+        if (item) {
+            item.classList.remove('unread');
+            showNotification('تم تعيين الإشعار كمقروء', 'success');
+        }
+    }
+
+    function markAllAsRead() {
+        if (confirm('هل تريد تعيين جميع الإشعارات كمقروءة؟')) {
+            // في التطبيق الحقيقي، ستقوم بإرسال طلب لتحديث جميع الإشعارات
+            document.querySelectorAll('.notification-item.unread').forEach(item => {
+                item.classList.remove('unread');
+            });
+            showNotification('تم تعيين جميع الإشعارات كمقروءة', 'success');
+        }
+    }
+
+    function clearAllNotifications() {
+        if (confirm('هل تريد حذف جميع الإشعارات؟ لا يمكن التراجع عن هذا الإجراء.')) {
+            // في التطبيق الحقيقي، ستقوم بإرسال طلب لحذف جميع الإشعارات
+            document.getElementById('notificationsList').innerHTML = '';
+            showEmptyState();
+            showNotification('تم حذف جميع الإشعارات', 'success');
+        }
+    }
+
+    function viewNotification(notificationId) {
+        // في التطبيق الحقيقي، ستقوم بفتح تفاصيل الإشعار
+        showNotification('عرض تفاصيل الإشعار', 'info');
+    }
+
+    function deleteNotification(notificationId) {
+        if (confirm('هل تريد حذف هذا الإشعار؟')) {
+            // في التطبيق الحقيقي، ستقوم بإرسال طلب لحذف الإشعار
+            const item = document.querySelector(`[data-notification-id="${notificationId}"]`);
+            if (item) {
+                item.remove();
+                showNotification('تم حذف الإشعار', 'success');
+            }
+        }
+    }
+
+    function showEmptyState() {
+        document.getElementById('notificationsList').style.display = 'none';
+        document.getElementById('emptyState').style.display = 'block';
+    }
+
+    function showNotification(message, type) {
+        // في التطبيق الحقيقي، ستقوم بعرض إشعار
+        alert(message);
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,445 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة تحكم مقدم الرعاية - دوائي{% endblock %}
+
+{% block content %}
+<div class="caregiver-dashboard-container">
+    <div class="dashboard-header">
+        <h1><i class="fas fa-hands-helping"></i> لوحة تحكم مقدم الرعاية</h1>
+        <p>مرحباً {{ current_user.full_name }} - متابعة أحبائك وإدارة أدويتهم</p>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- المرضى المتابعين -->
+        <div class="dashboard-card patients-card">
+            <div class="card-header">
+                <h3><i class="fas fa-users"></i> المرضى المتابعين</h3>
+                <span class="card-count">0</span>
+            </div>
+            <div class="card-content">
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-user-friends"></i></div>
+                    <p>لا يوجد مرضى متابعين حالياً</p>
+                    <a href="#" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> إضافة مريض
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- التذكيرات القادمة -->
+        <div class="dashboard-card reminders-card">
+            <div class="card-header">
+                <h3><i class="fas fa-bell"></i> التذكيرات القادمة</h3>
+                <span class="card-count">0</span>
+            </div>
+            <div class="card-content">
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-bell"></i></div>
+                    <p>لا توجد تذكيرات قادمة</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- الأدوية المتابعة -->
+        <div class="dashboard-card medications-card">
+            <div class="card-header">
+                <h3><i class="fas fa-pills"></i> الأدوية المتابعة</h3>
+                <a href="#" class="card-link">عرض الكل</a>
+            </div>
+            <div class="card-content">
+                <div class="medications-summary">
+                    <div class="summary-item">
+                        <div class="summary-value">0</div>
+                        <div class="summary-label">أدوية نشطة</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value">0</div>
+                        <div class="summary-label">جرعات اليوم</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الإحصائيات السريعة -->
+        <div class="dashboard-card stats-card">
+            <div class="card-header">
+                <h3><i class="fas fa-chart-bar"></i> إحصائيات سريعة</h3>
+            </div>
+            <div class="card-content">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">مرضى متابعين</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">تذكيرات اليوم</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">95%</div>
+                        <div class="stat-label">معدل الالتزام</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">استشارات معلقة</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الإجراءات السريعة -->
+        <div class="dashboard-card actions-card">
+            <div class="card-header">
+                <h3><i class="fas fa-bolt"></i> إجراءات سريعة</h3>
+            </div>
+            <div class="card-content">
+                <div class="quick-actions">
+                    <a href="#" class="quick-action">
+                        <div class="action-icon"><i class="fas fa-user-plus"></i></div>
+                        <div class="action-text">إضافة مريض</div>
+                    </a>
+                    <a href="#" class="quick-action">
+                        <div class="action-icon"><i class="fas fa-pills"></i></div>
+                        <div class="action-text">متابعة الأدوية</div>
+                    </a>
+                    <a href="#" class="quick-action">
+                        <div class="action-icon"><i class="fas fa-comments"></i></div>
+                        <div class="action-text">الاستشارات</div>
+                    </a>
+                    <a href="{{ url_for('profile') }}" class="quick-action">
+                        <div class="action-icon"><i class="fas fa-user-edit"></i></div>
+                        <div class="action-text">الملف الشخصي</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- النشاط الأخير -->
+        <div class="dashboard-card activity-card">
+            <div class="card-header">
+                <h3><i class="fas fa-clock"></i> النشاط الأخير</h3>
+            </div>
+            <div class="card-content">
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="activity-content">
+                            <p><strong>تم إضافة مريض جديد</strong></p>
+                            <small>منذ ساعتين</small>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <div class="activity-content">
+                            <p><strong>تم تسجيل تناول جرعة</strong></p>
+                            <small>منذ 4 ساعات</small>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div class="activity-content">
+                            <p><strong>تذكير جديد مضاف</strong></p>
+                            <small>منذ يوم</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* لوحة تحكم مقدم الرعاية - دارك مود */
+    .caregiver-dashboard-container {
+        max-width: 100%;
+        margin: 0;
+        padding: var(--spacing-xl);
+        background: var(--bg-gradient);
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    .caregiver-dashboard-container::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at 20% 80%, rgba(0, 191, 166, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(79, 195, 247, 0.1) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .dashboard-header {
+        text-align: center;
+        margin-bottom: var(--spacing-2xl);
+    }
+
+    .dashboard-header h1 {
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-sm);
+        background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .dashboard-header p {
+        color: var(--text-secondary);
+        font-size: var(--font-size-lg);
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: var(--spacing-lg);
+        max-width: 100%;
+        align-items: start;
+    }
+
+    .dashboard-card {
+        background: var(--bg-glass);
+        -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(20px);
+        border-radius: var(--border-radius-lg);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .dashboard-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .dashboard-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg), var(--shadow-primary);
+        border-color: var(--primary-color);
+    }
+
+    .dashboard-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--spacing-lg);
+        border-bottom: 1px solid rgba(0, 191, 166, 0.2);
+        background: var(--bg-glass-hover);
+    }
+
+    .card-header h3 {
+        margin: 0;
+        color: var(--text-primary);
+    }
+
+    .card-count {
+        background: linear-gradient(135deg, var(--primary-color), #00A693);
+        color: white;
+        padding: var(--spacing-xs) var(--spacing-sm);
+        border-radius: var(--border-radius);
+        font-size: var(--font-size-sm);
+        font-weight: 600;
+        box-shadow: var(--shadow-primary);
+    }
+
+    .card-content {
+        padding: var(--spacing-lg);
+    }
+
+    .medications-summary {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-lg);
+    }
+
+    .summary-item {
+        text-align: center;
+        padding: var(--spacing-md);
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .summary-value {
+        font-size: var(--font-size-2xl);
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .summary-label {
+        font-size: var(--font-size-sm);
+        color: var(--text-secondary);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-lg);
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: var(--spacing-md);
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .stat-item:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-primary);
+    }
+
+    .stat-value {
+        font-size: var(--font-size-2xl);
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .stat-label {
+        font-size: var(--font-size-sm);
+        color: var(--text-secondary);
+    }
+
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-md);
+    }
+
+    .quick-action {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: var(--spacing-lg);
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        text-decoration: none;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .quick-action:hover {
+        background: var(--bg-glass);
+        transform: translateY(-2px);
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-primary);
+    }
+
+    .action-icon {
+        font-size: var(--font-size-2xl);
+        margin-bottom: var(--spacing-sm);
+        color: var(--primary-color);
+    }
+
+    .action-text {
+        font-size: var(--font-size-sm);
+        font-weight: 500;
+    }
+
+    .activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: center;
+        padding: var(--spacing-md);
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .activity-item:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-primary);
+    }
+
+    .activity-icon {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+        margin-left: var(--spacing-md);
+        width: 40px;
+        text-align: center;
+    }
+
+    .activity-content p {
+        margin: 0 0 var(--spacing-xs) 0;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .activity-content small {
+        color: var(--text-secondary);
+        font-size: 0.9em;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: var(--spacing-xl);
+        color: var(--text-secondary);
+    }
+
+    .empty-icon {
+        font-size: var(--font-size-4xl);
+        margin-bottom: var(--spacing-md);
+        color: var(--primary-color);
+    }
+
+    .empty-state p {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    @media (max-width: 768px) {
+        .caregiver-dashboard-container {
+            padding: var(--spacing-md);
+        }
+
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+            gap: var(--spacing-sm);
+        }
+
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .medications-summary {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

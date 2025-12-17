@@ -1,0 +1,646 @@
+{% extends "base.html" %}
+
+{% block title %}تعديل الملف الشخصي - دوائي{% endblock %}
+
+{% block content %}
+<div class="profile-edit-container">
+    <div class="page-header">
+        <h1><i class="fas fa-user-edit"></i> تعديل الملف الشخصي</h1>
+        <p>قم بتحديث معلوماتك الشخصية</p>
+    </div>
+
+    <div class="profile-content">
+        <div class="profile-sidebar">
+            <div class="profile-avatar">
+                <div class="avatar-container">
+                    <img src="{{ current_user.avatar_url or url_for('static', filename='images/default-avatar.png') }}"
+                        alt="صورة الملف الشخصي" class="avatar-image">
+                    <div class="avatar-overlay">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                </div>
+                <button type="button" class="btn-avatar-upload">
+                    <i class="fas fa-upload"></i> تغيير الصورة
+                </button>
+            </div>
+
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>عضو منذ {% if current_user.created_at %}{{ current_user.created_at.strftime('%Y-%m-%d') }}{% else %}غير محدد{% endif %}</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-pills"></i>
+                    <span>{{ current_user.medications|length }} دواء</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-comments"></i>
+                    <span>{{ current_user.consultations|length }} استشارة</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-main">
+            <form method="POST" enctype="multipart/form-data" class="profile-form">
+                {{ form.hidden_tag() }}
+
+                <div class="form-section">
+                    <h3><i class="fas fa-user"></i> المعلومات الشخصية</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="full_name" class="form-label">
+                                <i class="fas fa-id-card"></i> الاسم الكامل
+                            </label>
+                            {{ form.full_name(class="form-input", placeholder="أدخل اسمك الكامل") }}
+                            {% if form.full_name.errors %}
+                            <div class="error-messages">
+                                {% for error in form.full_name.errors %}
+                                <span class="error-message">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope"></i> البريد الإلكتروني
+                            </label>
+                            {{ form.email(class="form-input", placeholder="أدخل بريدك الإلكتروني") }}
+                            {% if form.email.errors %}
+                            <div class="error-messages">
+                                {% for error in form.email.errors %}
+                                <span class="error-message">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="phone" class="form-label">
+                                <i class="fas fa-phone"></i> رقم الهاتف
+                            </label>
+                            {{ form.phone(class="form-input", placeholder="أدخل رقم هاتفك") }}
+                            {% if form.phone.errors %}
+                            <div class="error-messages">
+                                {% for error in form.phone.errors %}
+                                <span class="error-message">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="date_of_birth" class="form-label">
+                                <i class="fas fa-birthday-cake"></i> تاريخ الميلاد
+                            </label>
+                            {{ form.date_of_birth(class="form-input", type="date") }}
+                            {% if form.date_of_birth.errors %}
+                            <div class="error-messages">
+                                {% for error in form.date_of_birth.errors %}
+                                <span class="error-message">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="gender" class="form-label">
+                                <i class="fas fa-venus-mars"></i> الجنس
+                            </label>
+                            {{ form.gender(class="form-select") }}
+                            {% if form.gender.errors %}
+                            <div class="error-messages">
+                                {% for error in form.gender.errors %}
+                                <span class="error-message">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="blood_type" class="form-label">
+                                <i class="fas fa-tint"></i> فصيلة الدم
+                            </label>
+                            {{ form.blood_type(class="form-select") }}
+                            {% if form.blood_type.errors %}
+                            <div class="error-messages">
+                                {% for error in form.blood_type.errors %}
+                                <span class="error-message">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3><i class="fas fa-map-marker-alt"></i> العنوان</h3>
+
+                    <div class="form-group">
+                        <label for="address" class="form-label">
+                            <i class="fas fa-home"></i> العنوان التفصيلي
+                        </label>
+                        {{ form.address(class="form-textarea", placeholder="أدخل عنوانك التفصيلي") }}
+                        {% if form.address.errors %}
+                        <div class="error-messages">
+                            {% for error in form.address.errors %}
+                            <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="city" class="form-label">
+                                <i class="fas fa-city"></i> المدينة
+                            </label>
+                            {{ form.city(class="form-input", placeholder="أدخل مدينتك") }}
+                            {% if form.city.errors %}
+                            <div class="error-messages">
+                                {% for error in form.city.errors %}
+                                <span class="error-message">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="postal_code" class="form-label">
+                                <i class="fas fa-mail-bulk"></i> الرمز البريدي
+                            </label>
+                            {{ form.postal_code(class="form-input", placeholder="أدخل الرمز البريدي") }}
+                            {% if form.postal_code.errors %}
+                            <div class="error-messages">
+                                {% for error in form.postal_code.errors %}
+                                <span class="error-message">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3><i class="fas fa-heartbeat"></i> المعلومات الطبية</h3>
+
+                    <div class="form-group">
+                        <label for="medical_conditions" class="form-label">
+                            <i class="fas fa-stethoscope"></i> الحالات الطبية
+                        </label>
+                        {{ form.medical_conditions(class="form-textarea", placeholder="اكتب أي حالات طبية تعاني
+                        منها...") }}
+                        {% if form.medical_conditions.errors %}
+                        <div class="error-messages">
+                            {% for error in form.medical_conditions.errors %}
+                            <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="allergies" class="form-label">
+                            <i class="fas fa-exclamation-triangle"></i> الحساسيات
+                        </label>
+                        {{ form.allergies(class="form-textarea", placeholder="اكتب أي حساسيات معروفة لديك...") }}
+                        {% if form.allergies.errors %}
+                        <div class="error-messages">
+                            {% for error in form.allergies.errors %}
+                            <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="emergency_contact" class="form-label">
+                            <i class="fas fa-phone-alt"></i> جهة الاتصال في الطوارئ
+                        </label>
+                        {{ form.emergency_contact(class="form-input", placeholder="أدخل اسم ورقم جهة الاتصال في
+                        الطوارئ") }}
+                        {% if form.emergency_contact.errors %}
+                        <div class="error-messages">
+                            {% for error in form.emergency_contact.errors %}
+                            <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="doctor_id" class="form-label">
+                            <i class="fas fa-user-md"></i> الطبيب المعالج
+                        </label>
+                        {{ form.doctor_id(class="form-select") }}
+                        {% if form.doctor_id.errors %}
+                        <div class="error-messages">
+                            {% for error in form.doctor_id.errors %}
+                            <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3><i class="fas fa-cog"></i> إعدادات الحساب</h3>
+
+                    <div class="form-group">
+                        <label for="language" class="form-label">
+                            <i class="fas fa-language"></i> اللغة المفضلة
+                        </label>
+                        {{ form.language(class="form-select") }}
+                        {% if form.language.errors %}
+                        <div class="error-messages">
+                            {% for error in form.language.errors %}
+                            <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="timezone" class="form-label">
+                            <i class="fas fa-clock"></i> المنطقة الزمنية
+                        </label>
+                        {{ form.timezone(class="form-select") }}
+                        {% if form.timezone.errors %}
+                        <div class="error-messages">
+                            {% for error in form.timezone.errors %}
+                            <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            {{ form.email_notifications() }}
+                            <span class="checkbox-text">تلقي الإشعارات عبر البريد الإلكتروني</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            {{ form.sms_notifications() }}
+                            <span class="checkbox-text">تلقي الإشعارات عبر الرسائل النصية</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> حفظ التعديلات
+                    </button>
+                    <a href="{{ url_for('profile') }}" class="btn-secondary">
+                        <i class="fas fa-times"></i> إلغاء
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-edit-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 30px;
+        text-align: center;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .page-header h1 {
+        margin: 0 0 10px 0;
+        color: var(--text-primary);
+        font-size: 2.2em;
+        font-weight: 700;
+    }
+
+    .page-header p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 1.1em;
+    }
+
+    .page-header i {
+        margin-left: 10px;
+        color: var(--primary-color);
+    }
+
+    .profile-content {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 30px;
+        align-items: start;
+    }
+
+    .profile-sidebar {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        position: sticky;
+        top: 20px;
+    }
+
+    .profile-avatar {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .avatar-container {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 15px;
+    }
+
+    .avatar-image {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid var(--primary-color);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .avatar-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        cursor: pointer;
+    }
+
+    .avatar-container:hover .avatar-overlay {
+        opacity: 1;
+    }
+
+    .avatar-overlay i {
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .btn-avatar-upload {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-avatar-upload:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+    }
+
+    .profile-stats {
+        border-top: 1px solid rgba(0, 191, 166, 0.2);
+        padding-top: 20px;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+
+    .stat-item i {
+        margin-left: 10px;
+        color: var(--primary-color);
+        width: 20px;
+    }
+
+    .profile-main {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .form-section {
+        margin-bottom: 40px;
+        padding-bottom: 30px;
+        border-bottom: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .form-section h3 {
+        margin: 0 0 25px 0;
+        color: var(--text-primary);
+        font-size: 1.4em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-section h3 i {
+        margin-left: 10px;
+        color: var(--primary-color);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 1em;
+    }
+
+    .form-label i {
+        margin-left: 8px;
+        color: var(--primary-color);
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid rgba(0, 191, 166, 0.3);
+        border-radius: 8px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(0, 191, 166, 0.1);
+    }
+
+    .form-textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    .checkbox-label input[type="checkbox"] {
+        margin-left: 10px;
+        width: 18px;
+        height: 18px;
+        accent-color: var(--primary-color);
+    }
+
+    .checkbox-text {
+        flex: 1;
+    }
+
+    .error-messages {
+        margin-top: 8px;
+    }
+
+    .error-message {
+        display: block;
+        color: #dc3545;
+        font-size: 0.9em;
+        margin-bottom: 5px;
+        background: rgba(220, 53, 69, 0.1);
+        padding: 8px 12px;
+        border-radius: 4px;
+        border-left: 4px solid #dc3545;
+    }
+
+    .form-actions {
+        padding-top: 30px;
+        border-top: 1px solid rgba(0, 191, 166, 0.2);
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .btn-primary:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-primary i {
+        margin-left: 8px;
+    }
+
+    .btn-secondary {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        padding: 15px 30px;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        border: 2px solid rgba(0, 191, 166, 0.3);
+    }
+
+    .btn-secondary:hover {
+        background: var(--bg-card);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-secondary i {
+        margin-left: 8px;
+    }
+
+    @media (max-width: 768px) {
+        .profile-content {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .profile-sidebar {
+            position: static;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}

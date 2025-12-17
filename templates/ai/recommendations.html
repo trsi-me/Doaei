@@ -1,0 +1,647 @@
+{% extends "base.html" %}
+
+{% block title %}التوصيات الذكية - دوائي{% endblock %}
+
+{% block content %}
+<div class="ai-container">
+    <div class="page-header">
+        <h1><i class="fas fa-robot"></i> التوصيات الذكية</h1>
+        <p>احصل على توصيات ذكية للأدوية والعلاجات بناءً على حالتك الصحية</p>
+        <a href="{{ url_for('recommendations') }}" class="btn-primary">
+            <i class="fas fa-magic"></i> طلب توصية جديدة
+        </a>
+    </div>
+
+    <!-- تصفية التوصيات -->
+    <div class="recommendations-filter-section">
+        <div class="filter-group">
+            <label for="recommendationType" class="filter-label">نوع التوصية:</label>
+            <select id="recommendationType" class="form-select">
+                <option value="">جميع الأنواع</option>
+                <option value="medication">توصية دوائية</option>
+                <option value="dosage">توصية جرعة</option>
+                <option value="timing">توقيت الدواء</option>
+                <option value="interaction">تفاعل دوائي</option>
+                <option value="lifestyle">نمط الحياة</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="priorityFilter" class="filter-label">الأولوية:</label>
+            <select id="priorityFilter" class="form-select">
+                <option value="">جميع الأولويات</option>
+                <option value="high">عالية</option>
+                <option value="medium">متوسطة</option>
+                <option value="low">منخفضة</option>
+            </select>
+        </div>
+    </div>
+
+    {% if recommendations %}
+    <div class="recommendations-grid" id="recommendationsContainer">
+        {% for recommendation in recommendations %}
+        <div class="recommendation-card recommendation-item" data-type="{{ recommendation.recommendation_type }}"
+            data-priority="{{ recommendation.priority }}">
+            <div class="recommendation-header">
+                <h5><i class="fas fa-lightbulb"></i> {{ recommendation.title }}</h5>
+                <div class="recommendation-priority">
+                    <span class="priority-badge priority-{{ recommendation.priority }}">{{ recommendation.priority
+                        }}</span>
+                </div>
+            </div>
+
+            <div class="recommendation-body">
+                <div class="recommendation-details">
+                    <div class="detail-row">
+                        <span class="detail-label">نوع التوصية:</span>
+                        <span class="detail-value">{{ recommendation.recommendation_type }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">تاريخ الإنشاء:</span>
+                        <span class="detail-value">{% if recommendation.created_at %}{{ recommendation.created_at.strftime('%Y-%m-%d %H:%M') }}{% else %}غير محدد{% endif %}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">مستوى الثقة:</span>
+                        <span class="detail-value">{{ recommendation.confidence_score }}%</span>
+                    </div>
+                    {% if recommendation.medication_name %}
+                    <div class="detail-row">
+                        <span class="detail-label">الدواء المقترح:</span>
+                        <span class="detail-value">{{ recommendation.medication_name }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="recommendation-content">
+                    <h6>التوصية:</h6>
+                    <p class="recommendation-text">{{ recommendation.description }}</p>
+                </div>
+
+                {% if recommendation.reasoning %}
+                <div class="recommendation-reasoning">
+                    <h6>السبب:</h6>
+                    <p class="reasoning-text">{{ recommendation.reasoning }}</p>
+                </div>
+                {% endif %}
+
+                <div class="recommendation-actions">
+                    <button class="btn-outline-success" onclick="acceptRecommendation({{ recommendation.id }})">
+                        <i class="fas fa-check"></i> قبول
+                    </button>
+                    <button class="btn-outline-danger" onclick="rejectRecommendation({{ recommendation.id }})">
+                        <i class="fas fa-times"></i> رفض
+                    </button>
+                    <button class="btn-outline-info" onclick="getMoreInfo({{ recommendation.id }})">
+                        <i class="fas fa-info-circle"></i> معلومات أكثر
+                    </button>
+                    <button class="btn-outline-warning" onclick="saveRecommendation({{ recommendation.id }})">
+                        <i class="fas fa-bookmark"></i> حفظ
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-robot"></i>
+        </div>
+        <h3>لا توجد توصيات</h3>
+        <p>لم تحصل على أي توصيات ذكية بعد. ابدأ بطلب توصيتك الأولى.</p>
+        <a href="{{ url_for('recommendations') }}" class="btn-primary">
+            <i class="fas fa-magic"></i> طلب أول توصية
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    /* الحاوي الرئيسي */
+    .ai-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    /* رأس الصفحة */
+    .page-header {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .page-header h1 {
+        margin: 0 0 10px 0;
+        color: #2c3e50;
+        font-size: 2.2em;
+        font-weight: 700;
+    }
+
+    .page-header p {
+        margin: 0 0 20px 0;
+        color: #6c757d;
+        font-size: 1.1em;
+    }
+
+    .page-header i {
+        margin-left: 10px;
+        color: #9b59b6;
+    }
+
+    /* الأزرار */
+    .btn-primary {
+        background-color: #9b59b6;
+        color: white;
+        padding: 12px 25px;
+        text-decoration: none;
+        border-radius: 8px;
+        display: inline-block;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background-color: #8e44ad;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(155, 89, 182, 0.3);
+    }
+
+    .btn-primary i {
+        margin-left: 8px;
+    }
+
+    /* قسم تصفية التوصيات */
+    .recommendations-filter-section {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .filter-label {
+        display: block;
+        margin-bottom: 8px;
+        color: #2c3e50;
+        font-weight: 600;
+    }
+
+    .form-select {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-select:focus {
+        outline: none;
+        border-color: #9b59b6;
+        box-shadow: 0 0 0 3px rgba(155, 89, 182, 0.1);
+    }
+
+    /* شبكة التوصيات */
+    .recommendations-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        gap: 25px;
+    }
+
+    /* بطاقة التوصية */
+    .recommendation-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .recommendation-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* رأس بطاقة التوصية */
+    .recommendation-header {
+        background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        color: white;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .recommendation-header h5 {
+        margin: 0;
+        font-size: 1.3em;
+        font-weight: 600;
+    }
+
+    .recommendation-header i {
+        margin-left: 8px;
+        color: #fff;
+    }
+
+    /* شارة الأولوية */
+    .priority-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .priority-high {
+        background: rgba(231, 76, 60, 0.2);
+        color: #e74c3c;
+        border: 1px solid #e74c3c;
+    }
+
+    .priority-medium {
+        background: rgba(241, 196, 15, 0.2);
+        color: #f1c40f;
+        border: 1px solid #f1c40f;
+    }
+
+    .priority-low {
+        background: rgba(39, 174, 96, 0.2);
+        color: #27ae60;
+        border: 1px solid #27ae60;
+    }
+
+    /* جسم بطاقة التوصية */
+    .recommendation-body {
+        padding: 25px;
+    }
+
+    /* تفاصيل التوصية */
+    .recommendation-details {
+        margin-bottom: 25px;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid #f1f2f6;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: #6c757d;
+    }
+
+    .detail-value {
+        color: #2c3e50;
+        font-weight: 500;
+    }
+
+    /* محتوى التوصية */
+    .recommendation-content {
+        margin-bottom: 25px;
+    }
+
+    .recommendation-content h6 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
+    .recommendation-text {
+        color: #495057;
+        line-height: 1.6;
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 0;
+    }
+
+    /* سبب التوصية */
+    .recommendation-reasoning {
+        margin-bottom: 25px;
+        background: #e8f5e8;
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 4px solid #27ae60;
+    }
+
+    .recommendation-reasoning h6 {
+        color: #27ae60;
+        margin-bottom: 10px;
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
+    .reasoning-text {
+        color: #2c3e50;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* أزرار الإجراءات */
+    .recommendation-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn-outline-success {
+        background-color: transparent;
+        color: #27ae60;
+        border: 2px solid #27ae60;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 0.85em;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-outline-success:hover {
+        background-color: #27ae60;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline-danger {
+        background-color: transparent;
+        color: #e74c3c;
+        border: 2px solid #e74c3c;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 0.85em;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-outline-danger:hover {
+        background-color: #e74c3c;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline-info {
+        background-color: transparent;
+        color: #17a2b8;
+        border: 2px solid #17a2b8;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 0.85em;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-outline-info:hover {
+        background-color: #17a2b8;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline-warning {
+        background-color: transparent;
+        color: #f39c12;
+        border: 2px solid #f39c12;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 0.85em;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-outline-warning:hover {
+        background-color: #f39c12;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline-success i,
+    .btn-outline-danger i,
+    .btn-outline-info i,
+    .btn-outline-warning i {
+        margin-left: 6px;
+    }
+
+    /* الحالة الفارغة */
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-top: 50px;
+    }
+
+    .empty-icon {
+        font-size: 5em;
+        color: #bdc3c7;
+        margin-bottom: 25px;
+    }
+
+    .empty-state h3 {
+        color: #2c3e50;
+        margin-bottom: 15px;
+        font-size: 1.8em;
+        font-weight: 600;
+    }
+
+    .empty-state p {
+        color: #6c757d;
+        margin-bottom: 30px;
+        font-size: 1.1em;
+        line-height: 1.6;
+    }
+
+    /* إخفاء العناصر */
+    .recommendation-item.hidden {
+        display: none;
+    }
+
+    /* التصميم المتجاوب */
+    @media (max-width: 768px) {
+        .ai-container {
+            padding: 15px;
+        }
+
+        .page-header {
+            padding: 20px;
+        }
+
+        .page-header h1 {
+            font-size: 1.8em;
+        }
+
+        .recommendations-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .recommendations-filter-section {
+            flex-direction: column;
+        }
+
+        .recommendation-actions {
+            flex-direction: column;
+        }
+
+        .btn-outline-success,
+        .btn-outline-danger,
+        .btn-outline-info,
+        .btn-outline-warning {
+            text-align: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .ai-container {
+            padding: 10px;
+        }
+
+        .page-header {
+            padding: 15px;
+        }
+
+        .page-header h1 {
+            font-size: 1.5em;
+        }
+
+        .recommendation-body {
+            padding: 20px;
+        }
+
+        .detail-row {
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .detail-value {
+            text-align: right;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const recommendationTypeFilter = document.getElementById('recommendationType');
+        const priorityFilter = document.getElementById('priorityFilter');
+        const recommendationItems = document.querySelectorAll('.recommendation-item');
+
+        function filterRecommendations() {
+            const selectedType = recommendationTypeFilter.value;
+            const selectedPriority = priorityFilter.value;
+
+            recommendationItems.forEach(item => {
+                const recommendationType = item.dataset.type;
+                const priority = item.dataset.priority;
+
+                const matchesType = !selectedType || recommendationType === selectedType;
+                const matchesPriority = !selectedPriority || priority === selectedPriority;
+
+                if (matchesType && matchesPriority) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        }
+
+        recommendationTypeFilter.addEventListener('change', filterRecommendations);
+        priorityFilter.addEventListener('change', filterRecommendations);
+    });
+
+    function acceptRecommendation(recommendationId) {
+        if (confirm('هل تريد قبول هذه التوصية؟')) {
+            fetch(`/recommendations/${recommendationId}/accept`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('تم قبول التوصية بنجاح');
+                        location.reload();
+                    } else {
+                        alert('خطأ في قبول التوصية');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('خطأ في قبول التوصية');
+                });
+        }
+    }
+
+    function rejectRecommendation(recommendationId) {
+        if (confirm('هل تريد رفض هذه التوصية؟')) {
+            fetch(`/recommendations/${recommendationId}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('تم رفض التوصية');
+                        location.reload();
+                    } else {
+                        alert('خطأ في رفض التوصية');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('خطأ في رفض التوصية');
+                });
+        }
+    }
+
+    function getMoreInfo(recommendationId) {
+        // يمكن إضافة نافذة منبثقة أو صفحة منفصلة لعرض معلومات أكثر
+        alert('معلومات إضافية عن التوصية ستكون متاحة قريباً');
+    }
+
+    function saveRecommendation(recommendationId) {
+        fetch(`/recommendations/${recommendationId}/save`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('تم حفظ التوصية بنجاح');
+                } else {
+                    alert('خطأ في حفظ التوصية');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('خطأ في حفظ التوصية');
+            });
+    }
+</script>
+{% endblock %}

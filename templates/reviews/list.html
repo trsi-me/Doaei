@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}المراجعات - دوائي{% endblock %}
+
+{% block content %}
+<div class="reviews-container">
+    <div class="page-header">
+        <h1><i class="fas fa-star"></i> مراجعاتي</h1>
+        <p>إدارة مراجعاتك للصيدليات والمنتجات</p>
+        <a href="/reviews/add" class="btn-primary" style="background-color: #3498db; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+            <i class="fas fa-plus"></i> إضافة مراجعة جديدة
+        </a>
+    </div>
+
+    <div class="reviews-list">
+        {% if reviews.items %}
+            {% for review in reviews.items %}
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-rating">
+                        {% for i in range(1, 6) %}
+                            <i class="fas fa-star {% if i <= review.rating %}active{% endif %}"></i>
+                        {% endfor %}
+                    </div>
+                    <div class="review-date">
+                        {% if review.created_at %}{{ review.created_at.strftime('%Y-%m-%d %H:%M') }}{% else %}غير محدد{% endif %}
+                    </div>
+                </div>
+
+                <div class="review-content">
+                    {% if review.title %}
+                        <h3>{{ review.title }}</h3>
+                    {% endif %}
+                    
+                    {% if review.pharmacy %}
+                        <p class="review-target">
+                            <i class="fas fa-store"></i> الصيدلية: {{ review.pharmacy.name }}
+                        </p>
+                    {% endif %}
+                    
+                    {% if review.product %}
+                        <p class="review-target">
+                            <i class="fas fa-pills"></i> المنتج: {{ review.product.name }}
+                        </p>
+                    {% endif %}
+                    
+                    {% if review.comment %}
+                        <p class="review-comment">{{ review.comment }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="review-actions">
+                    <a href="{{ url_for('edit_review', review_id=review.id) }}" class="btn btn-sm btn-outline">
+                        <i class="fas fa-edit"></i> تعديل
+                    </a>
+                    <button onclick="deleteReview({{ review.id }})" class="btn btn-sm btn-danger">
+                        <i class="fas fa-trash"></i> حذف
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Pagination -->
+            {% if reviews.pages > 1 %}
+            <div class="pagination">
+                {% if reviews.has_prev %}
+                    <a href="{{ url_for('reviews_list', page=reviews.prev_num) }}" class="btn btn-outline">
+                        <i class="fas fa-chevron-right"></i> السابق
+                    </a>
+                {% endif %}
+                
+                <span class="page-info">
+                    صفحة {{ reviews.page }} من {{ reviews.pages }}
+                </span>
+                
+                {% if reviews.has_next %}
+                    <a href="{{ url_for('reviews_list', page=reviews.next_num) }}" class="btn btn-outline">
+                        التالي <i class="fas fa-chevron-left"></i>
+                    </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-star"></i>
+                <h3>لا توجد مراجعات</h3>
+                <p>لم تقم بإضافة أي مراجعات بعد</p>
+                <a href="/reviews/add" class="btn-primary" style="background-color: #3498db; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; margin-top: 20px;">
+                    <i class="fas fa-plus"></i> إضافة أول مراجعة
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.reviews-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.page-header {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: #3498db !important;
+    color: white !important;
+    padding: 12px 25px !important;
+    text-decoration: none !important;
+    border-radius: 8px !important;
+    display: inline-block !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    border: none !important;
+    cursor: pointer !important;
+    position: relative !important;
+    z-index: 100 !important;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3) !important;
+}
+
+.btn-primary i {
+    margin-left: 8px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 30px;
+}
+
+.empty-state i {
+    font-size: 4em;
+    color: #f39c12;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.empty-state h3 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 1.5em;
+}
+
+.empty-state p {
+    color: #6c757d;
+    margin-bottom: 30px;
+}
+</style>
+
+<script>
+function deleteReview(reviewId) {
+    if (confirm('هل أنت متأكد من حذف هذه المراجعة؟')) {
+        fetch(`/reviews/${reviewId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'حدث خطأ أثناء حذف المراجعة');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء حذف المراجعة');
+        });
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- قسم البطل -->
+<section class="hero">
+    <div class="hero-container">
+        <div class="hero-content">
+            <h1 class="hero-title">إدارة أدويتك أصبحت أسهل</h1>
+            <p class="hero-subtitle">منصة دوائي تساعدك على تنظيم أدويتك وتذكيرك بمواعيد الجرعات</p>
+            <div class="hero-actions">
+                {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('register') }}" class="btn btn-primary btn-large">ابدأ الآن</a>
+                <a href="{{ url_for('login') }}" class="btn btn-secondary btn-large">تسجيل الدخول</a>
+                {% else %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-large">لوحة التحكم</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="hero-illustration">
+                <!-- أيقونة كبيرة مركزية بدلاً من الأيقونات الصغيرة -->
+                <div class="main-hero-icon">
+                    <div class="icon-container">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <div class="icon-glow"></div>
+                </div>
+                <!-- عناصر ديناميكية حول الأيقونة الرئيسية -->
+                <div class="floating-elements">
+                    <div class="floating-pill floating-pill-1">
+                        <i class="fas fa-pills"></i>
+                    </div>
+                    <div class="floating-pill floating-pill-2">
+                        <i class="fas fa-pills"></i>
+                    </div>
+                    <div class="floating-pill floating-pill-3">
+                        <i class="fas fa-pills"></i>
+                    </div>
+                    <div class="floating-bell">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="floating-chart">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- قسم الميزات -->
+<section class="features">
+    <div class="container">
+        <h2 class="section-title">ميزات منصة دوائي</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h3>تذكيرات ذكية</h3>
+                <p>احصل على تذكيرات عبر البريد الإلكتروني والرسائل النصية لمواعيد أدويتك</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h3>تقارير مفصلة</h3>
+                <p>احصل على تقارير أسبوعية وشهرية عن التزامك بالأدوية</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <h3>استشارات الصيدلي</h3>
+                <p>احصل على استشارات فورية من الصيادلة المتخصصين</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3>مشاركة السجلات</h3>
+                <p>شارك سجل أدويتك مع طبيبك أو مقدم الرعاية</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h3>تقييم المنتجات</h3>
+                <p>شارك تجربتك مع الأدوية وساعد الآخرين</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>أمان وخصوصية</h3>
+                <p>بياناتك محمية بأعلى معايير الأمان والخصوصية</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- قسم الإحصائيات -->
+<section class="stats">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">1000+</div>
+                <div class="stat-label">مستخدم نشط</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">5000+</div>
+                <div class="stat-label">دواء مُدار</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">95%</div>
+                <div class="stat-label">معدل الالتزام</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">دعم متواصل</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- قسم الشهادات -->
+<section class="testimonials">
+    <div class="container">
+        <h2 class="section-title">ماذا يقول مستخدمونا</h2>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <div class="testimonial-content">
+                    <p>"منصة دوائي ساعدتني كثيراً في تنظيم أدويتي. التذكيرات مفيدة جداً وأنا لم أنس جرعة واحدة منذ أن
+                        بدأت استخدامها."</p>
+                </div>
+                <div class="testimonial-author">
+                    <div class="author-name">أحمد محمد</div>
+                    <div class="author-role">مريض</div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-content">
+                    <p>"كطبيب، أجد أن منصة دوائي مفيدة جداً لمتابعة مرضاي والتأكد من التزامهم بالأدوية الموصوفة."</p>
+                </div>
+                <div class="testimonial-author">
+                    <div class="author-name">د. فاطمة أحمد</div>
+                    <div class="author-role">طبيبة</div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-content">
+                    <p>"الاستشارات مع الصيادلة ساعدتني في فهم أدويتي بشكل أفضل. الخدمة ممتازة والرد سريع."</p>
+                </div>
+                <div class="testimonial-author">
+                    <div class="author-name">سارة خالد</div>
+                    <div class="author-role">مريضة</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- قسم الاشتراك -->
+<section class="cta">
+    <div class="container">
+        <div class="cta-content">
+            <h2>ابدأ رحلتك نحو إدارة أفضل لأدويتك</h2>
+            <p>انضم إلى آلاف المستخدمين الذين يثقون في منصة دوائي</p>
+            {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('register') }}" class="btn btn-primary btn-large">إنشاء حساب مجاني</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // إضافة تأثيرات تفاعلية للصفحة الرئيسية
+    document.addEventListener('DOMContentLoaded', function () {
+        // تأثير الحركة للأيقونة الرئيسية
+        const mainIcon = document.querySelector('.main-hero-icon');
+        if (mainIcon) {
+            mainIcon.style.animation = 'pulse 3s ease-in-out infinite';
+        }
+
+        // تأثير الحركة للعناصر العائمة
+        const floatingPills = document.querySelectorAll('.floating-pill');
+        floatingPills.forEach((pill, index) => {
+            setTimeout(() => {
+                pill.style.animation = 'float 4s ease-in-out infinite';
+            }, index * 300);
+        });
+
+        // تأثير للجرس
+        const bell = document.querySelector('.floating-bell');
+        if (bell) {
+            bell.style.animation = 'ring 2.5s ease-in-out infinite';
+        }
+
+        // تأثير للرسم البياني
+        const chart = document.querySelector('.floating-chart');
+        if (chart) {
+            chart.style.animation = 'bounce 3s ease-in-out infinite';
+        }
+
+        // تأثير الإحصائيات عند التمرير
+        const observerOptions = {
+            threshold: 0.5,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const statNumbers = entry.target.querySelectorAll('.stat-number');
+                    statNumbers.forEach(stat => {
+                        animateNumber(stat);
+                    });
+                }
+            });
+        }, observerOptions);
+
+        const statsSection = document.querySelector('.stats');
+        if (statsSection) {
+            observer.observe(statsSection);
+        }
+    });
+
+    function animateNumber(element) {
+        const target = parseInt(element.textContent.replace(/[^\d]/g, ''));
+        const duration = 2000;
+        const increment = target / (duration / 16);
+        let current = 0;
+
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+
+            const suffix = element.textContent.replace(/[\d]/g, '');
+            element.textContent = Math.floor(current) + suffix;
+        }, 16);
+    }
+</script>
+{% endblock %}

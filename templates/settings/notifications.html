@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+
+{% block title %}إعدادات الإشعارات - دوائي{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="page-title">
+                <i class="fas fa-bell"></i>
+                إعدادات الإشعارات
+            </h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-cog"></i> تخصيص الإشعارات</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+
+                        <!-- إشعارات البريد الإلكتروني -->
+                        <div class="notification-section">
+                            <h6><i class="fas fa-envelope"></i> إشعارات البريد الإلكتروني</h6>
+
+                            <div class="form-check form-switch mb-3">
+                                {{ form.email_notifications(class="form-check-input") }}
+                                {{ form.email_notifications.label(class="form-check-label") }}
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                {{ form.sms_notifications(class="form-check-input") }}
+                                {{ form.sms_notifications.label(class="form-check-label") }}
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- إعدادات التذكيرات -->
+                        <div class="notification-section">
+                            <h6><i class="fas fa-clock"></i> إعدادات التذكيرات</h6>
+
+                            <div class="mb-3">
+                                {{ form.reminder_advance_minutes.label(class="form-label") }}
+                                {{ form.reminder_advance_minutes(class="form-control", type="number", min="0", max="60")
+                                }}
+                                {% if form.reminder_advance_minutes.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.reminder_advance_minutes.errors %}
+                                    <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">عدد الدقائق قبل موعد الجرعة لإرسال التذكير</div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- أنواع الإشعارات -->
+                        <div class="notification-section">
+                            <h6><i class="fas fa-list"></i> أنواع الإشعارات</h6>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="notification-type">
+                                        <h6><i class="fas fa-pills"></i> تذكيرات الأدوية</h6>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="medicationEmail"
+                                                checked>
+                                            <label class="form-check-label" for="medicationEmail">
+                                                البريد الإلكتروني
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="medicationSMS" checked>
+                                            <label class="form-check-label" for="medicationSMS">
+                                                الرسائل النصية
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="medicationPush">
+                                            <label class="form-check-label" for="medicationPush">
+                                                الإشعارات المباشرة
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="notification-type">
+                                        <h6><i class="fas fa-comments"></i> استشارات الصيدلي</h6>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="consultationEmail"
+                                                checked>
+                                            <label class="form-check-label" for="consultationEmail">
+                                                البريد الإلكتروني
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="consultationSMS">
+                                            <label class="form-check-label" for="consultationSMS">
+                                                الرسائل النصية
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="consultationPush"
+                                                checked>
+                                            <label class="form-check-label" for="consultationPush">
+                                                الإشعارات المباشرة
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="notification-type">
+                                        <h6><i class="fas fa-shopping-cart"></i> طلبات الأدوية</h6>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="orderEmail" checked>
+                                            <label class="form-check-label" for="orderEmail">
+                                                البريد الإلكتروني
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="orderSMS" checked>
+                                            <label class="form-check-label" for="orderSMS">
+                                                الرسائل النصية
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="orderPush" checked>
+                                            <label class="form-check-label" for="orderPush">
+                                                الإشعارات المباشرة
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="notification-type">
+                                        <h6><i class="fas fa-file-alt"></i> التقارير</h6>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="reportEmail" checked>
+                                            <label class="form-check-label" for="reportEmail">
+                                                البريد الإلكتروني
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="reportSMS">
+                                            <label class="form-check-label" for="reportSMS">
+                                                الرسائل النصية
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="reportPush">
+                                            <label class="form-check-label" for="reportPush">
+                                                الإشعارات المباشرة
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i>
+                                حفظ الإعدادات
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- ملخص الإعدادات -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> ملخص الإعدادات</h5>
+                </div>
+                <div class="card-body">
+                    <div class="setting-summary">
+                        <div class="summary-item">
+                            <i class="fas fa-envelope text-primary"></i>
+                            <div>
+                                <strong>البريد الإلكتروني</strong>
+                                <p>مفعل للتذكيرات والاستشارات</p>
+                            </div>
+                        </div>
+
+                        <div class="summary-item">
+                            <i class="fas fa-sms text-success"></i>
+                            <div>
+                                <strong>الرسائل النصية</strong>
+                                <p>مفعل للتذكيرات والطلبات</p>
+                            </div>
+                        </div>
+
+                        <div class="summary-item">
+                            <i class="fas fa-bell text-warning"></i>
+                            <div>
+                                <strong>الإشعارات المباشرة</strong>
+                                <p>مفعل للاستشارات والطلبات</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- نصائح -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-lightbulb"></i> نصائح</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> فعّل التذكيرات لضمان تناول الأدوية</li>
+                        <li><i class="fas fa-check text-success"></i> استخدم الرسائل النصية للتذكيرات العاجلة</li>
+                        <li><i class="fas fa-check text-success"></i> فعّل إشعارات الاستشارات للمتابعة</li>
+                        <li><i class="fas fa-check text-success"></i> راجع الإعدادات بانتظام</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- اختبار الإشعارات -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-test-tube"></i> اختبار الإشعارات</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">اختبر إعدادات الإشعارات بإرسال رسالة تجريبية</p>
+
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="testEmail()">
+                            <i class="fas fa-envelope"></i>
+                            اختبار البريد الإلكتروني
+                        </button>
+
+                        <button type="button" class="btn btn-outline-success btn-sm" onclick="testSMS()">
+                            <i class="fas fa-sms"></i>
+                            اختبار الرسائل النصية
+                        </button>
+
+                        <button type="button" class="btn btn-outline-warning btn-sm" onclick="testPush()">
+                            <i class="fas fa-bell"></i>
+                            اختبار الإشعارات المباشرة
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .notification-section {
+        margin-bottom: 30px;
+    }
+
+    .notification-section h6 {
+        color: #495057;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .notification-type {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .notification-type h6 {
+        color: #007bff;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 10px;
+    }
+
+    .setting-summary .summary-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .setting-summary .summary-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .setting-summary .summary-item i {
+        font-size: 20px;
+        margin-left: 15px;
+        margin-top: 5px;
+    }
+
+    .setting-summary .summary-item div {
+        flex: 1;
+    }
+
+    .setting-summary .summary-item strong {
+        display: block;
+        margin-bottom: 5px;
+        color: #495057;
+    }
+
+    .setting-summary .summary-item p {
+        margin: 0;
+        color: #6c757d;
+        font-size: 14px;
+    }
+</style>
+
+<script>
+    function testEmail() {
+        if (confirm('هل تريد إرسال رسالة تجريبية إلى بريدك الإلكتروني؟')) {
+            // إضافة منطق اختبار البريد الإلكتروني
+            alert('تم إرسال رسالة تجريبية إلى بريدك الإلكتروني');
+        }
+    }
+
+    function testSMS() {
+        if (confirm('هل تريد إرسال رسالة تجريبية إلى رقم هاتفك؟')) {
+            // إضافة منطق اختبار الرسائل النصية
+            alert('تم إرسال رسالة تجريبية إلى رقم هاتفك');
+        }
+    }
+
+    function testPush() {
+        if (confirm('هل تريد إرسال إشعار تجريبي؟')) {
+            // إضافة منطق اختبار الإشعارات المباشرة
+            if ('Notification' in window) {
+                Notification.requestPermission().then(function (permission) {
+                    if (permission === 'granted') {
+                        new Notification('دوائي - اختبار الإشعارات', {
+                            body: 'هذا إشعار تجريبي من منصة دوائي',
+                            icon: '/static/images/Icon.ico'
+                        });
+                    }
+                });
+            } else {
+                alert('المتصفح لا يدعم الإشعارات المباشرة');
+            }
+        }
+    }
+</script>
+{% endblock %}

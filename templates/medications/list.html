@@ -1,0 +1,460 @@
+{% extends "base.html" %}
+
+{% block title %}أدويتي - دوائي{% endblock %}
+
+{% block content %}
+
+<div class="medications-container">
+    <div class="page-header">
+        <h1><i class="fas fa-pills"></i> أدويتي</h1>
+        <p>إدارة جدول الأدوية والتذكيرات</p>
+        <a href="{{ url_for('add_medication') }}" class="btn-primary">
+            <i class="fas fa-plus"></i> إضافة دواء جديد
+        </a>
+    </div>
+
+    {% if medications %}
+    <div class="medications-grid">
+        {% for medication in medications %}
+        <div class="medication-card">
+            <div class="medication-header">
+                <h5><i class="fas fa-pills"></i> {{ medication.name }}</h5>
+                <span class="medication-status status-{{ 'active' if medication.is_active else 'paused' }}">
+                    {{ 'نشط' if medication.is_active else 'متوقف' }}
+                </span>
+            </div>
+            <div class="medication-body">
+                <div class="medication-info">
+                    <div class="info-row">
+                        <span class="info-label">الجرعة:</span>
+                        <span class="info-value">{{ medication.dosage }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">التكرار:</span>
+                        <span class="info-value">{{ medication.frequency }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">تاريخ البداية:</span>
+                        <span class="info-value">{% if medication.start_date %}{{ medication.start_date.strftime('%Y-%m-%d') }}{% else %}غير محدد{% endif %}</span>
+                    </div>
+                    {% if medication.end_date %}
+                    <div class="info-row">
+                        <span class="info-label">تاريخ النهاية:</span>
+                        <span class="info-value">{{ medication.end_date.strftime('%Y-%m-%d') if medication.end_date else 'غير محدد' }}</span>
+                    </div>
+                    {% endif %}
+                    {% if medication.notes %}
+                    <div class="info-row">
+                        <span class="info-label">الملاحظات:</span>
+                        <span class="info-value">{{ medication.notes }}</span>
+                    </div>
+                    {% endif %}
+                    {% if medication.form %}
+                    <div class="info-row">
+                        <span class="info-label">الشكل:</span>
+                        <span class="info-value">{{ medication.form }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="medication-actions">
+                    <a href="{{ url_for('edit_medication', medication_id=medication.id) }}" class="btn-outline-primary">
+                        <i class="fas fa-edit"></i> تعديل
+                    </a>
+                    <a href="{{ url_for('medications') }}" class="btn-outline-info">
+                        <i class="fas fa-bell"></i> التذكيرات
+                    </a>
+                    <button class="btn-outline-danger" onclick="deleteMedication({{ medication.id }})">
+                        <i class="fas fa-trash"></i> حذف
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-pills"></i>
+        </div>
+        <h3>لا توجد أدوية</h3>
+        <p>لم تقم بإضافة أي أدوية بعد. ابدأ بإضافة دوائك الأول.</p>
+        <a href="{{ url_for('add_medication') }}" class="btn-primary">
+            <i class="fas fa-plus"></i> إضافة دوائك الأول
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    /* الحاوي الرئيسي */
+    .medications-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    /* رأس الصفحة */
+    .page-header {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .page-header h1 {
+        margin: 0 0 10px 0;
+        color: #2c3e50;
+        font-size: 2.2em;
+        font-weight: 700;
+    }
+
+    .page-header p {
+        margin: 0 0 20px 0;
+        color: #6c757d;
+        font-size: 1.1em;
+    }
+
+    .page-header i {
+        margin-left: 10px;
+        color: #3498db;
+    }
+
+    /* الأزرار */
+    .btn-primary {
+        background-color: #3498db;
+        color: white;
+        padding: 12px 25px;
+        text-decoration: none;
+        border-radius: 8px;
+        display: inline-block;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+    }
+
+    .btn-primary i {
+        margin-left: 8px;
+    }
+
+    /* شبكة الأدوية */
+    .medications-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 25px;
+    }
+
+    /* بطاقة الدواء */
+    .medication-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .medication-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* رأس بطاقة الدواء */
+    .medication-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .medication-header h5 {
+        margin: 0;
+        font-size: 1.3em;
+        font-weight: 600;
+    }
+
+    .medication-header i {
+        margin-left: 8px;
+        color: #f39c12;
+    }
+
+    /* حالة الدواء */
+    .medication-status {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .status-active {
+        background: rgba(39, 174, 96, 0.2);
+        color: #27ae60;
+        border: 1px solid #27ae60;
+    }
+
+    .status-completed {
+        background: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+        border: 1px solid #3498db;
+    }
+
+    .status-paused {
+        background: rgba(241, 196, 15, 0.2);
+        color: #f1c40f;
+        border: 1px solid #f1c40f;
+    }
+
+    /* جسم بطاقة الدواء */
+    .medication-body {
+        padding: 25px;
+    }
+
+    /* معلومات الدواء */
+    .medication-info {
+        margin-bottom: 25px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid #f1f2f6;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #6c757d;
+        flex: 1;
+    }
+
+    .info-value {
+        color: #2c3e50;
+        font-weight: 500;
+        text-align: left;
+        flex: 1;
+    }
+
+    /* أزرار الإجراءات */
+    .medication-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-outline-primary {
+        background-color: transparent;
+        color: #3498db;
+        border: 2px solid #3498db;
+        padding: 8px 16px;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 0.9em;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #3498db;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline-info {
+        background-color: transparent;
+        color: #17a2b8;
+        border: 2px solid #17a2b8;
+        padding: 8px 16px;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 0.9em;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+
+    .btn-outline-info:hover {
+        background-color: #17a2b8;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline-danger {
+        background-color: transparent;
+        color: #e74c3c;
+        border: 2px solid #e74c3c;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 0.9em;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-outline-danger:hover {
+        background-color: #e74c3c;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline-primary i,
+    .btn-outline-info i,
+    .btn-outline-danger i {
+        margin-left: 6px;
+    }
+
+    /* الحالة الفارغة - دارك مود */
+    .empty-state {
+        text-align: center;
+        padding: var(--spacing-2xl);
+        background: var(--bg-glass);
+        -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(20px);
+        border-radius: var(--border-radius-lg);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        box-shadow: var(--shadow-md);
+        margin-top: var(--spacing-xl);
+    }
+
+    .empty-icon {
+        font-size: var(--font-size-4xl);
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .empty-state h3 {
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-md);
+        font-size: var(--font-size-xl);
+        font-weight: 600;
+    }
+
+    .empty-state p {
+        color: var(--text-secondary);
+        margin-bottom: var(--spacing-xl);
+        font-size: var(--font-size-lg);
+        line-height: 1.6;
+    }
+
+    /* التصميم المتجاوب */
+    @media (max-width: 768px) {
+        .medications-container {
+            padding: 15px;
+        }
+
+        .page-header {
+            padding: 20px;
+        }
+
+        .page-header h1 {
+            font-size: 1.8em;
+        }
+
+        .medications-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .medication-header {
+            flex-direction: column;
+            gap: 10px;
+            text-align: center;
+        }
+
+        .medication-actions {
+            justify-content: center;
+        }
+
+        .info-row {
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .info-value {
+            text-align: right;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .medications-container {
+            padding: 10px;
+        }
+
+        .page-header {
+            padding: 15px;
+        }
+
+        .page-header h1 {
+            font-size: 1.5em;
+        }
+
+        .medication-body {
+            padding: 20px;
+        }
+
+        .medication-actions {
+            flex-direction: column;
+        }
+
+        .btn-outline-primary,
+        .btn-outline-info,
+        .btn-outline-danger {
+            text-align: center;
+        }
+    }
+</style>
+
+<script>
+    function deleteMedication(id) {
+        if (confirm('هل أنت متأكد من حذف هذا الدواء؟')) {
+            // إنشاء form لإرسال POST request
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/medications/${id}/delete`;
+            
+            // البحث عن CSRF token في الصفحة
+            let csrfToken = null;
+            // محاولة الحصول من hidden tag في النماذج
+            const csrfInputs = document.querySelectorAll('input[name="csrf_token"]');
+            if (csrfInputs.length > 0) {
+                csrfToken = csrfInputs[0].value;
+            } else {
+                // محاولة الحصول من meta tag
+                const metaTag = document.querySelector('meta[name="csrf-token"]');
+                if (metaTag) {
+                    csrfToken = metaTag.getAttribute('content');
+                }
+            }
+            
+            if (csrfToken) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrf_token';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+            }
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+</script>
+{% endblock %}

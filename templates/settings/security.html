@@ -1,0 +1,729 @@
+{% extends "base.html" %}
+
+{% block title %}إعدادات الأمان - دوائي{% endblock %}
+
+{% block content %}
+<div class="security-settings-container">
+    <div class="page-header">
+        <h1><i class="fas fa-lock"></i> إعدادات الأمان</h1>
+        <p>حماية حسابك وبياناتك الشخصية</p>
+    </div>
+
+    <div class="settings-container">
+        <form method="POST" class="security-form">
+            <div class="settings-section">
+                <h3><i class="fas fa-key"></i> تغيير كلمة المرور</h3>
+
+                <div class="form-group">
+                    <label for="current_password" class="form-label">
+                        <i class="fas fa-lock"></i> كلمة المرور الحالية
+                    </label>
+                    <input type="password" name="current_password" id="current_password" class="form-input"
+                        placeholder="أدخل كلمة المرور الحالية" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="new_password" class="form-label">
+                        <i class="fas fa-key"></i> كلمة المرور الجديدة
+                    </label>
+                    <input type="password" name="new_password" id="new_password" class="form-input"
+                        placeholder="أدخل كلمة المرور الجديدة" required>
+                    <div class="password-strength" id="passwordStrength">
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="strengthFill"></div>
+                        </div>
+                        <span class="strength-text" id="strengthText">ضعيف</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password" class="form-label">
+                        <i class="fas fa-check"></i> تأكيد كلمة المرور
+                    </label>
+                    <input type="password" name="confirm_password" id="confirm_password" class="form-input"
+                        placeholder="أعد إدخال كلمة المرور الجديدة" required>
+                </div>
+
+                <div class="password-requirements">
+                    <h4>متطلبات كلمة المرور:</h4>
+                    <ul>
+                        <li id="req-length">8 أحرف على الأقل</li>
+                        <li id="req-uppercase">حرف كبير واحد على الأقل</li>
+                        <li id="req-lowercase">حرف صغير واحد على الأقل</li>
+                        <li id="req-number">رقم واحد على الأقل</li>
+                        <li id="req-special">رمز خاص واحد على الأقل</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3><i class="fas fa-shield-alt"></i> المصادقة الثنائية</h3>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>المصادقة الثنائية</h4>
+                        <p>طبقة إضافية من الأمان لحسابك</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="two_factor_auth" disabled>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <small class="setting-note">قريباً</small>
+                    </div>
+                </div>
+
+                <div class="security-info">
+                    <div class="info-card">
+                        <div class="info-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <div class="info-content">
+                            <h4>تطبيق المصادقة</h4>
+                            <p>استخدم تطبيق مثل Google Authenticator أو Authy</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3><i class="fas fa-history"></i> جلسات تسجيل الدخول</h3>
+
+                <div class="sessions-list">
+                    <div class="session-item">
+                        <div class="session-info">
+                            <h4>الجهاز الحالي</h4>
+                            <p>Windows 10 - Chrome</p>
+                            <small>آخر نشاط: الآن</small>
+                        </div>
+                        <div class="session-status">
+                            <span class="status-active">نشط</span>
+                        </div>
+                    </div>
+
+                    <div class="session-item">
+                        <div class="session-info">
+                            <h4>iPhone 12</h4>
+                            <p>iOS 15 - Safari</p>
+                            <small>آخر نشاط: منذ ساعتين</small>
+                        </div>
+                        <div class="session-actions">
+                            <button class="btn-danger" onclick="terminateSession(2)">
+                                <i class="fas fa-times"></i> إنهاء الجلسة
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3><i class="fas fa-exclamation-triangle"></i> إعدادات الأمان المتقدمة</h3>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>تسجيل الدخول التلقائي</h4>
+                        <p>تذكرني لمدة 30 يوماً</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="remember_me" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>إشعارات تسجيل الدخول</h4>
+                        <p>إرسال إشعار عند تسجيل الدخول من جهاز جديد</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="login_notifications" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>قفل الحساب</h4>
+                        <p>قفل الحساب بعد 5 محاولات فاشلة</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="account_lockout" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i> حفظ الإعدادات
+                </button>
+                <a href="{{ url_for('profile') }}" class="btn-secondary">
+                    <i class="fas fa-arrow-right"></i> العودة للملف الشخصي
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .security-settings-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 30px;
+        text-align: center;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .page-header h1 {
+        margin: 0 0 10px 0;
+        color: var(--text-primary);
+        font-size: 2.2em;
+        font-weight: 700;
+    }
+
+    .page-header p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 1.1em;
+    }
+
+    .page-header i {
+        margin-left: 10px;
+        color: var(--primary-color);
+    }
+
+    .settings-container {
+        background: var(--bg-glass);
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        overflow: hidden;
+    }
+
+    .settings-section {
+        padding: 30px;
+        border-bottom: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .settings-section:last-child {
+        border-bottom: none;
+    }
+
+    .settings-section h3 {
+        margin: 0 0 25px 0;
+        color: var(--text-primary);
+        font-size: 1.4em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .settings-section h3 i {
+        color: var(--primary-color);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 1em;
+    }
+
+    .form-label i {
+        margin-left: 8px;
+        color: var(--primary-color);
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid rgba(0, 191, 166, 0.3);
+        border-radius: 8px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(0, 191, 166, 0.1);
+    }
+
+    .password-strength {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .strength-bar {
+        flex: 1;
+        height: 6px;
+        background: var(--bg-secondary);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .strength-fill {
+        height: 100%;
+        width: 0%;
+        transition: all 0.3s ease;
+        border-radius: 3px;
+    }
+
+    .strength-text {
+        font-size: 0.9em;
+        font-weight: 500;
+        min-width: 60px;
+    }
+
+    .password-requirements {
+        background: var(--bg-secondary);
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    .password-requirements h4 {
+        margin: 0 0 15px 0;
+        color: var(--text-primary);
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
+    .password-requirements ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .password-requirements li {
+        padding: 5px 0;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .password-requirements li::before {
+        content: '✗';
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .password-requirements li.valid::before {
+        content: '✓';
+        color: #28a745;
+    }
+
+    .password-requirements li.valid {
+        color: #28a745;
+    }
+
+    .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 0;
+        border-bottom: 1px solid rgba(0, 191, 166, 0.1);
+    }
+
+    .setting-item:last-child {
+        border-bottom: none;
+    }
+
+    .setting-info {
+        flex: 1;
+    }
+
+    .setting-info h4 {
+        margin: 0 0 5px 0;
+        color: var(--text-primary);
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
+    .setting-info p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+        line-height: 1.4;
+    }
+
+    .setting-control {
+        margin-left: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked+.toggle-slider {
+        background-color: var(--primary-color);
+    }
+
+    input:checked+.toggle-slider:before {
+        transform: translateX(26px);
+    }
+
+    .setting-note {
+        color: var(--text-secondary);
+        font-size: 0.8em;
+        font-style: italic;
+    }
+
+    .security-info {
+        margin-top: 20px;
+    }
+
+    .info-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 20px;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        border: 1px solid rgba(0, 191, 166, 0.1);
+    }
+
+    .info-icon {
+        width: 50px;
+        height: 50px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .info-icon i {
+        color: white;
+        font-size: 1.5em;
+    }
+
+    .info-content h4 {
+        margin: 0 0 5px 0;
+        color: var(--text-primary);
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
+    .info-content p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+    }
+
+    .sessions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .session-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        border: 1px solid rgba(0, 191, 166, 0.1);
+    }
+
+    .session-info h4 {
+        margin: 0 0 5px 0;
+        color: var(--text-primary);
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
+    .session-info p {
+        margin: 0 0 5px 0;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+    }
+
+    .session-info small {
+        color: var(--text-muted);
+        font-size: 0.8em;
+    }
+
+    .status-active {
+        background: #28a745;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 15px;
+        font-size: 0.8em;
+        font-weight: 500;
+    }
+
+    .session-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-danger:hover {
+        background: #c82333;
+    }
+
+    .form-actions {
+        padding: 30px;
+        background: var(--bg-secondary);
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-secondary {
+        background: var(--bg-card);
+        color: var(--text-primary);
+        padding: 15px 30px;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 2px solid rgba(0, 191, 166, 0.3);
+    }
+
+    .btn-secondary:hover {
+        background: var(--bg-glass);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    @media (max-width: 768px) {
+        .security-settings-container {
+            padding: 15px;
+        }
+
+        .settings-section {
+            padding: 20px;
+        }
+
+        .setting-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .setting-control {
+            margin-left: 0;
+            align-self: flex-end;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .session-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .session-actions {
+            align-self: flex-end;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const newPasswordInput = document.getElementById('new_password');
+        const confirmPasswordInput = document.getElementById('confirm_password');
+        const strengthFill = document.getElementById('strengthFill');
+        const strengthText = document.getElementById('strengthText');
+        const requirements = {
+            length: document.getElementById('req-length'),
+            uppercase: document.getElementById('req-uppercase'),
+            lowercase: document.getElementById('req-lowercase'),
+            number: document.getElementById('req-number'),
+            special: document.getElementById('req-special')
+        };
+
+        newPasswordInput.addEventListener('input', function () {
+            const password = this.value;
+            checkPasswordStrength(password);
+            checkPasswordRequirements(password);
+        });
+
+        confirmPasswordInput.addEventListener('input', function () {
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = this.value;
+
+            if (confirmPassword && newPassword !== confirmPassword) {
+                this.style.borderColor = '#dc3545';
+            } else {
+                this.style.borderColor = 'rgba(0, 191, 166, 0.3)';
+            }
+        });
+
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            let strengthLevel = 'ضعيف';
+            let strengthColor = '#dc3545';
+
+            if (password.length >= 8) strength += 20;
+            if (/[A-Z]/.test(password)) strength += 20;
+            if (/[a-z]/.test(password)) strength += 20;
+            if (/[0-9]/.test(password)) strength += 20;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 20;
+
+            if (strength >= 80) {
+                strengthLevel = 'قوي جداً';
+                strengthColor = '#28a745';
+            } else if (strength >= 60) {
+                strengthLevel = 'قوي';
+                strengthColor = '#17a2b8';
+            } else if (strength >= 40) {
+                strengthLevel = 'متوسط';
+                strengthColor = '#ffc107';
+            } else if (strength >= 20) {
+                strengthLevel = 'ضعيف';
+                strengthColor = '#fd7e14';
+            }
+
+            strengthFill.style.width = strength + '%';
+            strengthFill.style.backgroundColor = strengthColor;
+            strengthText.textContent = strengthLevel;
+            strengthText.style.color = strengthColor;
+        }
+
+        function checkPasswordRequirements(password) {
+            const checks = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+                lowercase: /[a-z]/.test(password),
+                number: /[0-9]/.test(password),
+                special: /[^A-Za-z0-9]/.test(password)
+            };
+
+            Object.keys(checks).forEach(key => {
+                if (checks[key]) {
+                    requirements[key].classList.add('valid');
+                } else {
+                    requirements[key].classList.remove('valid');
+                }
+            });
+        }
+    });
+
+    function terminateSession(sessionId) {
+        if (confirm('هل أنت متأكد من إنهاء هذه الجلسة؟')) {
+            // في التطبيق الحقيقي، ستقوم بإرسال طلب لإنهاء الجلسة
+            alert('تم إنهاء الجلسة بنجاح');
+            location.reload();
+        }
+    }
+</script>
+{% endblock %}

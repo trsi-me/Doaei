@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}قائمة التقييمات - دوائي{% endblock %}
+
+{% block content %}
+<div class="doctor-evaluations-container">
+    <div class="page-header">
+        <h1><i class="fas fa-clipboard-list" style="color: #00BFA5;"></i> قائمة التقييمات</h1>
+        <a href="{{ url_for('doctor_add_evaluation') }}" class="btn btn-primary">إضافة تقييم جديد</a>
+    </div>
+
+    <div class="evaluations-section">
+        {% if evaluations %}
+        <div class="evaluations-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>المريض</th>
+                        <th>النوع</th>
+                        <th>التشخيص</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for evaluation in evaluations %}
+                    <tr>
+                        <td>{% if evaluation.evaluation_date %}{{ evaluation.evaluation_date.strftime('%Y-%m-%d') }}{% else %}غير محدد{% endif %}</td>
+                        <td>{{ evaluation.patient.full_name if evaluation.patient else 'غير محدد' }}</td>
+                        <td>{{ evaluation.evaluation_type or 'عام' }}</td>
+                        <td>{{ evaluation.diagnosis[:50] if evaluation.diagnosis else '-' }}...</td>
+                        <td>
+                            <a href="{{ url_for('doctor_evaluation_detail', evaluation_id=evaluation.id) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye"></i> عرض
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-clipboard-list" style="font-size: 4em; color: #ccc;"></i>
+            <p>لا توجد تقييمات</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .doctor-evaluations-container {
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        color: #333;
+    }
+
+    .evaluations-table {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead {
+        background: #f5f5f5;
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: right;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    th {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-primary {
+        background: #42A5F5;
+        color: white;
+    }
+
+    .btn-sm {
+        padding: 5px 10px;
+        font-size: 0.9em;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+    }
+</style>
+{% endblock %}
+

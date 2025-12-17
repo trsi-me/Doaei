@@ -1,0 +1,734 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة تحكم الطبيب - دوائي{% endblock %}
+
+{% block content %}
+<div class="doctor-dashboard-container">
+    <div class="dashboard-header">
+        <h1><i class="fas fa-user-md" style="color: #00BFA5;"></i> لوحة تحكم الطبيب</h1>
+        <p>مرحباً د. {{ current_user.full_name }} - إدارة مرضاك ومتابعة زياراتهم</p>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- المرضى المتابعين -->
+        <div class="dashboard-card patients-card">
+            <div class="card-header">
+                <h3><i class="fas fa-users" style="color: #4FC3F7;"></i> المرضى المتابعين</h3>
+                <span class="card-count">{{ patients|length }}</span>
+            </div>
+            <div class="card-content">
+                {% if patients %}
+                <div class="patients-list">
+                    {% for patient in patients[:5] %}
+                    <div class="patient-item">
+                        <div class="patient-avatar">
+                            <i class="fas fa-user" style="color: #81C784;"></i>
+                        </div>
+                        <div class="patient-info">
+                            <div class="patient-name">{{ patient.full_name }}</div>
+                            <div class="patient-details">
+                                <span class="email"><i class="fas fa-envelope" style="color: #64B5F6;"></i> {{ patient.email }}</span>
+                                {% if patient.phone %}
+                                <span class="phone"><i class="fas fa-phone" style="color: #64B5F6;"></i> {{ patient.phone }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="patient-actions">
+                            <a href="#" class="btn btn-sm btn-primary" onclick="viewPatientDetails({{ patient.id }})">
+                                <i class="fas fa-eye" style="color: white;"></i> التفاصيل
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if patients|length > 5 %}
+                <div class="view-more">
+                    <a href="#" class="view-more-link">عرض جميع المرضى ({{ patients|length }})</a>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-user-friends" style="color: #90A4AE; font-size: 3em;"></i></div>
+                    <p>لا يوجد مرضى متابعين حالياً</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- المواعيد القادمة -->
+        <div class="dashboard-card appointments-card">
+            <div class="card-header">
+                <h3><i class="fas fa-calendar-check" style="color: #FFB74D;"></i> المواعيد القادمة</h3>
+                <span class="card-count">{{ upcoming_appointments|length }}</span>
+            </div>
+            <div class="card-content">
+                {% if upcoming_appointments %}
+                <div class="appointments-list">
+                    {% for appointment in upcoming_appointments %}
+                    <div class="appointment-item">
+                        <div class="appointment-date">
+                            <i class="fas fa-calendar-alt" style="color: #FFB74D;"></i>
+                            <span>{{ appointment[2] if appointment[2] else 'غير محدد' }}</span>
+                        </div>
+                        <div class="appointment-time">
+                            <i class="fas fa-clock" style="color: #64B5F6;"></i>
+                            <span>{{ appointment[3] if appointment[3] else 'غير محدد' }}</span>
+                        </div>
+                        <div class="appointment-patient">
+                            <i class="fas fa-user" style="color: #81C784;"></i>
+                            <span>{{ appointment[9] if appointment[9] else 'مريض' }}</span>
+                        </div>
+                        <div class="appointment-type">
+                            <i class="fas fa-stethoscope" style="color: #BA68C8;"></i>
+                            <span>{{ appointment[4] if appointment[4] else 'روتيني' }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-calendar-times" style="color: #90A4AE; font-size: 3em;"></i></div>
+                    <p>لا توجد مواعيد قادمة</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- الزيارات الأخيرة -->
+        <div class="dashboard-card evaluations-card">
+            <div class="card-header">
+                <h3><i class="fas fa-clipboard-list" style="color: #EF5350;"></i> الزيارات الأخيرة</h3>
+                <a href="#" class="card-link">عرض الكل</a>
+            </div>
+            <div class="card-content">
+                {% if recent_evaluations %}
+                <div class="evaluations-list">
+                    {% for evaluation in recent_evaluations %}
+                    <div class="evaluation-item">
+                        <div class="evaluation-header">
+                            <div class="evaluation-date">
+                                <i class="fas fa-calendar" style="color: #FFB74D;"></i>
+                                {{ evaluation.evaluation_date.strftime('%Y-%m-%d') if evaluation.evaluation_date else 'غير محدد' }}
+                            </div>
+                            <div class="evaluation-type">
+                                <i class="fas fa-tag" style="color: #BA68C8;"></i>
+                                {{ evaluation.evaluation_type }}
+                            </div>
+                        </div>
+                        <div class="evaluation-patient">
+                            <i class="fas fa-user" style="color: #81C784;"></i>
+                            {% if evaluation.patient %}
+                            {{ evaluation.patient.full_name }}
+                            {% else %}
+                            مريض
+                            {% endif %}
+                        </div>
+                        {% if evaluation.diagnosis %}
+                        <div class="evaluation-diagnosis">
+                            <i class="fas fa-diagnoses" style="color: #EF5350;"></i>
+                            <span>{{ evaluation.diagnosis[:50] }}{% if evaluation.diagnosis|length > 50 %}...{% endif %}</span>
+                        </div>
+                        {% endif %}
+                        <div class="evaluation-actions">
+                            <a href="#" class="btn btn-sm btn-primary" onclick="viewEvaluation({{ evaluation.id }})">
+                                <i class="fas fa-eye" style="color: white;"></i> عرض التفاصيل
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-clipboard" style="color: #90A4AE; font-size: 3em;"></i></div>
+                    <p>لا توجد زيارات مسجلة</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- الإحصائيات السريعة -->
+        <div class="dashboard-card stats-card">
+            <div class="card-header">
+                <h3><i class="fas fa-chart-bar" style="color: #66BB6A;"></i> إحصائيات سريعة</h3>
+            </div>
+            <div class="card-content">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-icon"><i class="fas fa-users" style="color: #4FC3F7;"></i></div>
+                        <div class="stat-value">{{ patients|length }}</div>
+                        <div class="stat-label">مرضى متابعين</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon"><i class="fas fa-calendar-check" style="color: #FFB74D;"></i></div>
+                        <div class="stat-value">{{ upcoming_appointments|length }}</div>
+                        <div class="stat-label">مواعيد قادمة</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon"><i class="fas fa-clipboard-list" style="color: #EF5350;"></i></div>
+                        <div class="stat-value">{{ recent_evaluations|length }}</div>
+                        <div class="stat-label">زيارات هذا الشهر</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon"><i class="fas fa-star" style="color: #FFD54F;"></i></div>
+                        <div class="stat-value">4.8</div>
+                        <div class="stat-label">التقييم العام</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الإجراءات السريعة -->
+        <div class="dashboard-card actions-card">
+            <div class="card-header">
+                <h3><i class="fas fa-bolt" style="color: #FFA726;"></i> إجراءات سريعة</h3>
+            </div>
+            <div class="card-content">
+                <div class="quick-actions">
+                    <a href="{{ url_for('doctor_add_evaluation') }}" class="quick-action">
+                        <div class="action-icon"><i class="fas fa-plus-circle" style="color: #66BB6A;"></i></div>
+                        <div class="action-text">زيارة جديدة</div>
+                    </a>
+                    <a href="{{ url_for('doctor_add_appointment') }}" class="quick-action">
+                        <div class="action-icon"><i class="fas fa-calendar-plus" style="color: #42A5F5;"></i></div>
+                        <div class="action-text">موعد جديد</div>
+                    </a>
+                    <a href="{{ url_for('doctor_patients') }}" class="quick-action">
+                        <div class="action-icon"><i class="fas fa-users" style="color: #AB47BC;"></i></div>
+                        <div class="action-text">جميع المرضى</div>
+                    </a>
+                    <a href="{{ url_for('profile') }}" class="quick-action">
+                        <div class="action-icon"><i class="fas fa-user-edit" style="color: #26A69A;"></i></div>
+                        <div class="action-text">الملف الشخصي</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* لوحة تحكم الطبيب - دارك مود محسن */
+    .doctor-dashboard-container {
+        max-width: 100%;
+        margin: 0;
+        padding: 30px;
+        background: var(--bg-gradient);
+        min-height: calc(100vh - 75px);
+        position: relative;
+        overflow-x: hidden;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .doctor-dashboard-container::before {
+        content: '';
+        position: fixed;
+        top: 75px;
+        left: 0;
+        width: 100%;
+        height: calc(100vh - 75px);
+        background: radial-gradient(circle at 20% 80%, rgba(0, 191, 166, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(79, 195, 247, 0.1) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .dashboard-header {
+        text-align: center;
+        margin-bottom: 30px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .dashboard-header h1 {
+        color: var(--text-primary);
+        margin-bottom: 10px;
+        font-size: 2em;
+        font-weight: 700;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .dashboard-header h1 i {
+        margin-left: 10px;
+    }
+
+    .dashboard-header p {
+        color: var(--text-secondary);
+        font-size: 1.1em;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 25px;
+        max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .dashboard-card {
+        background: var(--bg-glass);
+        -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(20px);
+        border-radius: var(--border-radius-lg);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .dashboard-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .dashboard-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg), var(--shadow-primary);
+        border-color: var(--primary-color);
+    }
+
+    .dashboard-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        border-bottom: 1px solid rgba(0, 191, 166, 0.2);
+        background: var(--bg-glass-hover);
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .card-header h3 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 1.2em;
+        font-weight: 600;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .card-header h3 i {
+        margin-left: 8px;
+    }
+
+    .card-count {
+        background: linear-gradient(135deg, var(--primary-color), #00A693);
+        color: white;
+        padding: 5px 12px;
+        border-radius: var(--border-radius);
+        font-size: 0.9em;
+        font-weight: 600;
+        box-shadow: var(--shadow-primary);
+    }
+
+    .card-link {
+        color: var(--primary-color);
+        font-size: 0.9em;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .card-link:hover {
+        color: var(--accent-color);
+        text-decoration: underline;
+    }
+
+    .card-content {
+        padding: 20px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+
+    /* قائمة المرضى */
+    .patients-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .patient-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        transition: all 0.3s ease;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .patient-item:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-primary);
+    }
+
+    .patient-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: rgba(129, 199, 132, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5em;
+        flex-shrink: 0;
+    }
+
+    .patient-info {
+        flex: 1;
+        min-width: 0;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .patient-name {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 5px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .patient-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        font-size: 0.85em;
+        color: var(--text-secondary);
+    }
+
+    .patient-details span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .patient-actions {
+        flex-shrink: 0;
+    }
+
+    .view-more {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(0, 191, 166, 0.2);
+        text-align: center;
+    }
+
+    .view-more-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .view-more-link:hover {
+        text-decoration: underline;
+    }
+
+    /* قائمة المواعيد */
+    .appointments-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .appointment-item {
+        padding: 15px;
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        transition: all 0.3s ease;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .appointment-item:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-primary);
+    }
+
+    .appointment-date,
+    .appointment-time,
+    .appointment-patient,
+    .appointment-type {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        color: var(--text-primary);
+        font-size: 0.9em;
+    }
+
+    .appointment-item > div:last-child {
+        margin-bottom: 0;
+    }
+
+    /* قائمة الزيارات */
+    .evaluations-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .evaluation-item {
+        padding: 15px;
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        transition: all 0.3s ease;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .evaluation-item:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-primary);
+    }
+
+    .evaluation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .evaluation-date,
+    .evaluation-type {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.85em;
+        color: var(--text-secondary);
+    }
+
+    .evaluation-patient {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    .evaluation-diagnosis {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 10px;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .evaluation-actions {
+        margin-top: 10px;
+    }
+
+    /* الإحصائيات */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 15px;
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .stat-item:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-primary);
+    }
+
+    .stat-icon {
+        font-size: 2em;
+        margin-bottom: 8px;
+    }
+
+    .stat-value {
+        font-size: 1.8em;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 0.85em;
+        color: var(--text-secondary);
+    }
+
+    /* الإجراءات السريعة */
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .quick-action {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        text-decoration: none;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .quick-action:hover {
+        background: var(--bg-glass);
+        transform: translateY(-2px);
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-primary);
+    }
+
+    .action-icon {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+    }
+
+    .action-text {
+        font-size: 0.9em;
+        font-weight: 500;
+        text-align: center;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--text-secondary);
+    }
+
+    .empty-icon {
+        margin-bottom: 15px;
+    }
+
+    .empty-state p {
+        margin: 0;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    /* الأزرار */
+    .btn {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: var(--border-radius);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.85em;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), #00A693);
+        color: white;
+        box-shadow: var(--shadow-primary);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg), var(--shadow-primary);
+    }
+
+    /* التصميم المتجاوب */
+    @media (max-width: 1200px) {
+        .dashboard-grid {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .doctor-dashboard-container {
+            padding: 20px;
+        }
+
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .patient-item {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .patient-avatar {
+            margin: 0 auto;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .doctor-dashboard-container {
+            padding: 15px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.5em;
+        }
+
+        .card-content {
+            padding: 15px;
+        }
+    }
+</style>
+
+<script>
+    function viewPatientDetails(patientId) {
+        // عرض تفاصيل المريض
+        window.location.href = '{{ url_for("doctor_patient_detail", patient_id=0) }}'.replace('0', patientId);
+    }
+
+    function viewEvaluation(evaluationId) {
+        // عرض تفاصيل الزيارة
+        window.location.href = '{{ url_for("doctor_evaluation_detail", evaluation_id=0) }}'.replace('0', evaluationId);
+    }
+</script>
+{% endblock %}

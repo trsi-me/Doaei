@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}تتبع الطلب - دوائي{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="page-title">
+                <i class="fas fa-truck"></i>
+                تتبع الطلب
+            </h2>
+        </div>
+    </div>
+
+    {% if order %}
+    <div class="row">
+        <!-- معلومات الطلب -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> معلومات الطلب</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>رقم الطلب:</strong> {{ order.order_number }}</p>
+                            <p><strong>تاريخ الطلب:</strong> {% if order.created_at %}{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}{% else %}غير محدد{% endif %}</p>
+                            <p><strong>الحالة:</strong>
+                                <span
+                                    class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'cancelled' %}danger{% elif order.status == 'pending' %}warning{% else %}info{% endif %}">
+                                    {{ order.get_status_arabic() }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>الصيدلية:</strong> {{ order.pharmacy.name }}</p>
+                            <p><strong>طريقة الدفع:</strong> {{ order.payment_method }}</p>
+                            <p><strong>المجموع:</strong> {{ "%.2f"|format(order.total_amount) }} ريال</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- عناصر الطلب -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> عناصر الطلب</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>المنتج</th>
+                                    <th>الكمية</th>
+                                    <th>السعر</th>
+                                    <th>المجموع</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ item.pharmacy_product.name }}</strong>
+                                        {% if item.pharmacy_product.generic_name %}
+                                        <br><small class="text-muted">{{ item.pharmacy_product.generic_name }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ "%.2f"|format(item.unit_price) }} ريال</td>
+                                    <td>{{ "%.2f"|format(item.total_price) }} ريال</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- تتبع الطلب -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-route"></i> تتبع الطلب</h5>
+                </div>
+                <div class="card-body">
+                    {% if tracking %}
+                    <div class="timeline">
+                        {% for track in tracking %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <i class="fas fa-circle"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>{{ track.status }}</h6>
+                                <p class="text-muted">{{ track.description or 'لا توجد تفاصيل' }}</p>
+                                <small class="text-muted">{% if track.timestamp %}{{ track.timestamp.strftime('%Y-%m-%d %H:%M') }}{% else %}غير محدد{% endif %}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        لا توجد معلومات تتبع متاحة حالياً
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- معلومات التوصيل -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-map-marker-alt"></i> معلومات التوصيل</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>العنوان:</strong><br>{{ order.delivery_address }}</p>
+                    <p><strong>رقم الهاتف:</strong> {{ order.delivery_phone }}</p>
+                    {% if order.delivery_notes %}
+                    <p><strong>ملاحظات:</strong><br>{{ order.delivery_notes }}</p>
+                    {% endif %}
+                    {% if order.estimated_delivery_time %}
+                    <p><strong>وقت التوصيل المتوقع:</strong><br>{% if order.estimated_delivery_time %}{{ order.estimated_delivery_time.strftime('%Y-%m-%d %H:%M') }}{% else %}غير محدد{% endif %}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- إجراءات -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-cogs"></i> إجراءات</h5>
+                </div>
+                <div class="card-body">
+                    {% if order.status not in ['delivered', 'cancelled'] %}
+                    <form method="POST" action="{{ url_for('cancel_order', order_id=order.id) }}"
+                        onsubmit="return confirm('هل أنت متأكد من إلغاء هذا الطلب؟')">
+                        <button type="submit" class="btn btn-danger btn-sm w-100">
+                            <i class="fas fa-times"></i>
+                            إلغاء الطلب
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    <a href="{{ url_for('orders_list') }}" class="btn btn-secondary btn-sm w-100 mt-2">
+                        <i class="fas fa-arrow-left"></i>
+                        العودة للطلبات
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                لم يتم العثور على الطلب
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: -30px;
+        top: 0;
+        width: 20px;
+        height: 20px;
+        background: #007bff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 10px;
+    }
+
+    .timeline-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: -21px;
+        top: 20px;
+        width: 2px;
+        height: 20px;
+        background: #dee2e6;
+    }
+
+    .timeline-content h6 {
+        margin-bottom: 5px;
+        color: #495057;
+    }
+
+    .timeline-content p {
+        margin-bottom: 5px;
+    }
+</style>
+{% endblock %}

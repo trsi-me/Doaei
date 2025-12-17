@@ -1,0 +1,490 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة الموظفين - دوائي{% endblock %}
+
+{% block content %}
+<div class="admin-employees-container">
+    <div class="page-header">
+        <h1><i class="fas fa-user-tie" style="color: #42A5F5;"></i> إدارة الموظفين</h1>
+        <p>عرض وإدارة جميع الموظفين والأقسام</p>
+    </div>
+
+    <!-- إحصائيات الموظفين -->
+    <div class="stats-section">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-users" style="color: #4FC3F7;"></i></div>
+            <div class="stat-content">
+                <h3>{{ employees|length }}</h3>
+                <p>إجمالي الموظفين</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-building" style="color: #BA68C8;"></i></div>
+            <div class="stat-content">
+                <h3>{{ departments|length }}</h3>
+                <p>الأقسام</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-user-check" style="color: #66BB6A;"></i></div>
+            <div class="stat-content">
+                <h3>{{ employees|selectattr('status', 'equalto', 'active')|list|length }}</h3>
+                <p>موظفين نشطين</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- الأقسام -->
+    <div class="section-card">
+        <div class="card-header">
+            <h2><i class="fas fa-building" style="color: #BA68C8;"></i> الأقسام</h2>
+        </div>
+        <div class="card-content">
+            {% if departments %}
+            <div class="departments-grid">
+                {% for department in departments %}
+                <div class="department-card">
+                    <div class="department-header">
+                        <h3>{{ department.name }}</h3>
+                        {% if department.is_active %}
+                        <span class="status-badge status-active">
+                            <i class="fas fa-check-circle" style="color: white;"></i> نشط
+                        </span>
+                        {% else %}
+                        <span class="status-badge status-inactive">
+                            <i class="fas fa-times-circle" style="color: white;"></i> غير نشط
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% if department.description %}
+                    <p class="department-description">{{ department.description }}</p>
+                    {% endif %}
+                    <div class="department-info">
+                        {% if department.manager %}
+                        <div class="info-item">
+                            <i class="fas fa-user-shield" style="color: #FFB74D;"></i>
+                            <span>المدير: {{ department.manager.full_name }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="info-item">
+                            <i class="fas fa-money-bill-wave" style="color: #66BB6A;"></i>
+                            <span>الميزانية: {{ "{:,.2f}".format(department.budget) }} ريال</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-users" style="color: #4FC3F7;"></i>
+                            <span>عدد الموظفين: {{ department.employees|length }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-building" style="color: #90A4AE; font-size: 3em;"></i>
+                <p>لا توجد أقسام متاحة</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- قائمة الموظفين -->
+    <div class="section-card">
+        <div class="card-header">
+            <h2><i class="fas fa-user-tie" style="color: #42A5F5;"></i> قائمة الموظفين</h2>
+        </div>
+        <div class="card-content">
+            {% if employees %}
+            <div class="employees-table-container">
+                <table class="employees-table">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-hashtag" style="color: #4FC3F7;"></i> رقم الموظف</th>
+                            <th><i class="fas fa-user" style="color: #81C784;"></i> الاسم</th>
+                            <th><i class="fas fa-briefcase" style="color: #FFB74D;"></i> المسمى الوظيفي</th>
+                            <th><i class="fas fa-building" style="color: #BA68C8;"></i> القسم</th>
+                            <th><i class="fas fa-calendar-alt" style="color: #64B5F6;"></i> تاريخ التوظيف</th>
+                            <th><i class="fas fa-money-bill-wave" style="color: #66BB6A;"></i> الراتب</th>
+                            <th><i class="fas fa-info-circle" style="color: #EF5350;"></i> الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set current_dept = None %}
+                        {% for employee in employees %}
+                        {% if employee.department and employee.department.name != current_dept %}
+                        {% set current_dept = employee.department.name %}
+                        <tr class="department-separator">
+                            <td colspan="7" class="department-header-row">
+                                <strong><i class="fas fa-building"></i> {{ current_dept }}</strong>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td>{{ employee.employee_number }}</td>
+                            <td>
+                                <div class="employee-name">
+                                    <i class="fas fa-user-circle" style="color: #81C784;"></i>
+                                    {{ employee.user.full_name if employee.user else 'غير محدد' }}
+                                </div>
+                            </td>
+                            <td>{{ employee.position }}</td>
+                            <td>
+                                {% if employee.department %}
+                                <span class="department-badge">
+                                    <i class="fas fa-building" style="color: #BA68C8;"></i>
+                                    {{ employee.department.name }}
+                                </span>
+                                {% else %}
+                                <span class="no-department">غير محدد</span>
+                                {% endif %}
+                            </td>
+                            <td>{% if employee.hire_date %}{{ employee.hire_date.strftime('%Y-%m-%d') }}{% else %}غير
+                                محدد{% endif %}</td>
+                            <td class="salary-cell">{{ "{:,.2f}".format(employee.salary) }} ريال</td>
+                            <td>
+                                {% if employee.status == 'active' %}
+                                <span class="status-badge status-active">
+                                    <i class="fas fa-check-circle" style="color: white;"></i> نشط
+                                </span>
+                                {% elif employee.status == 'on_leave' %}
+                                <span class="status-badge status-leave">
+                                    <i class="fas fa-calendar-times" style="color: white;"></i> إجازة
+                                </span>
+                                {% else %}
+                                <span class="status-badge status-terminated">
+                                    <i class="fas fa-times-circle" style="color: white;"></i> منتهي
+                                </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-user-tie" style="color: #90A4AE; font-size: 3em;"></i>
+                <p>لا يوجد موظفين مسجلين</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .admin-employees-container {
+        max-width: 1400px;
+        margin: 30px auto;
+        padding: 0 20px;
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .page-header h1 {
+        font-size: 2.5em;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .page-header p {
+        color: var(--text-secondary);
+        font-size: 1.1em;
+    }
+
+    .stats-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+
+    .stat-card {
+        background: var(--bg-glass);
+        -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(20px);
+        border-radius: var(--border-radius-lg);
+        padding: 25px;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        box-shadow: var(--shadow-md);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-xl);
+        border-color: var(--primary-color);
+    }
+
+    .stat-icon {
+        font-size: 3em;
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: rgba(0, 191, 166, 0.1);
+        flex-shrink: 0;
+    }
+
+    .stat-content h3 {
+        font-size: 2em;
+        font-weight: 700;
+        margin: 0 0 5px 0;
+        color: var(--text-primary);
+    }
+
+    .stat-content p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 1em;
+    }
+
+    .section-card {
+        background: var(--bg-glass);
+        -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(20px);
+        border-radius: var(--border-radius-lg);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: var(--bg-glass-hover);
+        padding: 20px;
+        border-bottom: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.5em;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .card-content {
+        padding: 20px;
+    }
+
+    .departments-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .department-card {
+        background: var(--bg-glass-hover);
+        padding: 20px;
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .department-card:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-primary);
+    }
+
+    .department-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .department-header h3 {
+        margin: 0;
+        font-size: 1.3em;
+        color: var(--text-primary);
+    }
+
+    .department-description {
+        color: var(--text-secondary);
+        margin-bottom: 15px;
+        line-height: 1.6;
+    }
+
+    .department-info {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-primary);
+        font-size: 0.95em;
+    }
+
+    .employees-table-container {
+        overflow-x: auto;
+        width: 100%;
+    }
+
+    .employees-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+    }
+
+    .employees-table thead {
+        background: var(--bg-glass-hover);
+    }
+
+    .employees-table th {
+        padding: 15px;
+        text-align: right;
+        color: var(--text-primary);
+        font-weight: 600;
+        border-bottom: 2px solid rgba(0, 191, 166, 0.2);
+        white-space: nowrap;
+    }
+
+    .employees-table th i {
+        margin-left: 8px;
+    }
+
+    .employees-table td {
+        padding: 15px;
+        border-bottom: 1px solid rgba(0, 191, 166, 0.1);
+        color: var(--text-primary);
+    }
+
+    .employees-table tbody tr:hover {
+        background: var(--bg-glass);
+    }
+
+    .employees-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .employee-name {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+    }
+
+    .department-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        background: rgba(186, 104, 200, 0.2);
+        border-radius: 15px;
+        color: var(--text-primary);
+        font-size: 0.9em;
+    }
+
+    .no-department {
+        color: var(--text-secondary);
+        font-style: italic;
+    }
+
+    .salary-cell {
+        font-weight: 600;
+        color: #66BB6A;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85em;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background: linear-gradient(135deg, #66BB6A, #4CAF50);
+        color: white;
+    }
+
+    .status-leave {
+        background: linear-gradient(135deg, #FFB74D, #FFA726);
+        color: white;
+    }
+
+    .status-terminated {
+        background: linear-gradient(135deg, #EF5350, #E53935);
+        color: white;
+    }
+
+    .status-inactive {
+        background: linear-gradient(135deg, #90A4AE, #78909C);
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-secondary);
+    }
+
+    .empty-state i {
+        margin-bottom: 20px;
+    }
+
+    .empty-state p {
+        font-size: 1.1em;
+    }
+
+    .department-separator {
+        background: linear-gradient(135deg, #42A5F5, #2196F3);
+    }
+
+    .department-header-row {
+        padding: 15px !important;
+        color: white;
+        font-size: 1.1em;
+        text-align: center;
+    }
+
+    .department-header-row i {
+        margin-left: 8px;
+    }
+
+    @media (max-width: 768px) {
+        .admin-employees-container {
+            padding: 0 15px;
+        }
+
+        .page-header h1 {
+            font-size: 2em;
+        }
+
+        .stats-section {
+            grid-template-columns: 1fr;
+        }
+
+        .departments-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .employees-table-container {
+            overflow-x: scroll;
+        }
+
+        .employees-table {
+            min-width: 800px;
+        }
+    }
+</style>
+{% endblock %}

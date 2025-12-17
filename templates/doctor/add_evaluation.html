@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}إضافة تقييم جديد - دوائي{% endblock %}
+
+{% block content %}
+<div class="doctor-add-evaluation-container">
+    <div class="page-header">
+        <h1><i class="fas fa-plus-circle" style="color: #66BB6A;"></i> إضافة تقييم جديد</h1>
+        <a href="{{ url_for('doctor_evaluations') }}" class="btn btn-secondary">العودة للقائمة</a>
+    </div>
+
+    <form method="POST" class="evaluation-form">
+        <div class="form-group">
+            <label for="patient_id">المريض *</label>
+            <select name="patient_id" id="patient_id" required>
+                <option value="">اختر المريض</option>
+                {% for patient in patients %}
+                <option value="{{ patient.id }}">{{ patient.full_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="evaluation_date">تاريخ التقييم *</label>
+            <input type="date" name="evaluation_date" id="evaluation_date" value="{{ today }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="evaluation_type">نوع التقييم</label>
+            <select name="evaluation_type" id="evaluation_type">
+                <option value="">اختر النوع</option>
+                <option value="routine">روتيني</option>
+                <option value="follow_up">متابعة</option>
+                <option value="emergency">طوارئ</option>
+                <option value="consultation">استشارة</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="symptoms">الأعراض</label>
+            <textarea name="symptoms" id="symptoms" rows="4" placeholder="وصف الأعراض..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="diagnosis">التشخيص</label>
+            <textarea name="diagnosis" id="diagnosis" rows="4" placeholder="التشخيص..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="vital_signs">العلامات الحيوية</label>
+            <textarea name="vital_signs" id="vital_signs" rows="3" placeholder="العلامات الحيوية..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="physical_examination">الفحص البدني</label>
+            <textarea name="physical_examination" id="physical_examination" rows="4"
+                placeholder="نتائج الفحص البدني..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="lab_results">نتائج المختبر</label>
+            <textarea name="lab_results" id="lab_results" rows="4" placeholder="نتائج المختبر..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="recommendations">التوصيات</label>
+            <textarea name="recommendations" id="recommendations" rows="4" placeholder="التوصيات..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="prescribed_medications">الأدوية الموصوفة</label>
+            <textarea name="prescribed_medications" id="prescribed_medications" rows="4"
+                placeholder="الأدوية الموصوفة..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="next_visit_date">موعد الزيارة القادمة</label>
+            <input type="date" name="next_visit_date" id="next_visit_date">
+        </div>
+
+        <div class="form-group">
+            <label for="notes">ملاحظات</label>
+            <textarea name="notes" id="notes" rows="4" placeholder="ملاحظات إضافية..."></textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">حفظ التقييم</button>
+            <a href="{{ url_for('doctor_evaluations') }}" class="btn btn-secondary">إلغاء</a>
+        </div>
+    </form>
+</div>
+
+<style>
+    .doctor-add-evaluation-container {
+        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        color: #333;
+    }
+
+    .evaluation-form {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1em;
+    }
+
+    .form-group textarea {
+        resize: vertical;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 30px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-block;
+        border: none;
+        cursor: pointer;
+        font-size: 1em;
+    }
+
+    .btn-primary {
+        background: #42A5F5;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #999;
+        color: white;
+    }
+</style>
+{% endblock %}

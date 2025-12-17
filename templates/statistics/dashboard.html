@@ -1,0 +1,417 @@
+{% extends "base.html" %}
+
+{% block title %}الإحصائيات - دوائي{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="page-title">
+                <i class="fas fa-chart-bar"></i>
+                الإحصائيات والتحليلات
+            </h2>
+        </div>
+    </div>
+
+    <!-- بطاقات الإحصائيات الرئيسية -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-pills"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ stats.medications.total }}</h3>
+                    <p>إجمالي الأدوية</p>
+                    <div class="stat-detail">
+                        <span class="badge bg-success">{{ stats.medications.active }} نشط</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ stats.reminders.total }}</h3>
+                    <p>إجمالي التذكيرات</p>
+                    <div class="stat-detail">
+                        <span class="badge bg-info">{{ stats.reminders.completed }} مكتمل</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ stats.orders.total }}</h3>
+                    <p>إجمالي الطلبات</p>
+                    <div class="stat-detail">
+                        <span class="badge bg-success">{{ stats.orders.completed }} مكتمل</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ stats.recommendations.total }}</h3>
+                    <p>التوصيات الذكية</p>
+                    <div class="stat-detail">
+                        <span class="badge bg-warning">{{ stats.recommendations.accepted }} مقبول</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الرسوم البيانية -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-pie"></i> توزيع الأدوية</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="medicationsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-line"></i> التزام الأدوية</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="adherenceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- تفاصيل الإحصائيات -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-pills"></i> إحصائيات الأدوية</h5>
+                </div>
+                <div class="card-body">
+                    <div class="stat-item">
+                        <div class="stat-label">الأدوية النشطة</div>
+                        <div class="stat-value">{{ stats.medications.active }}</div>
+                        <div class="stat-percentage">{{ "%.1f"|format(stats.medications.percentage) }}%</div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-label">إجمالي الأدوية</div>
+                        <div class="stat-value">{{ stats.medications.total }}</div>
+                    </div>
+
+                    <div class="progress mb-3">
+                        <div class="progress-bar bg-success" style="width: {{ stats.medications.percentage }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-bell"></i> إحصائيات التذكيرات</h5>
+                </div>
+                <div class="card-body">
+                    <div class="stat-item">
+                        <div class="stat-label">التذكيرات المكتملة</div>
+                        <div class="stat-value">{{ stats.reminders.completed }}</div>
+                        <div class="stat-percentage">{{ "%.1f"|format(stats.reminders.percentage) }}%</div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-label">إجمالي التذكيرات</div>
+                        <div class="stat-value">{{ stats.reminders.total }}</div>
+                    </div>
+
+                    <div class="progress mb-3">
+                        <div class="progress-bar bg-info" style="width: {{ stats.reminders.percentage }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-robot"></i> إحصائيات التوصيات</h5>
+                </div>
+                <div class="card-body">
+                    <div class="stat-item">
+                        <div class="stat-label">التوصيات المقبولة</div>
+                        <div class="stat-value">{{ stats.recommendations.accepted }}</div>
+                        <div class="stat-percentage">{{ "%.1f"|format(stats.recommendations.percentage) }}%</div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-label">إجمالي التوصيات</div>
+                        <div class="stat-value">{{ stats.recommendations.total }}</div>
+                    </div>
+
+                    <div class="progress mb-3">
+                        <div class="progress-bar bg-warning" style="width: {{ stats.recommendations.percentage }}%">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- تقارير سريعة -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-file-alt"></i> التقارير السريعة</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="quick-report">
+                                <i class="fas fa-calendar-week"></i>
+                                <h6>تقرير أسبوعي</h6>
+                                <p>ملخص الأدوية والتذكيرات لهذا الأسبوع</p>
+                                <a href="{{ url_for('generate_report') }}?type=weekly"
+                                    class="btn btn-outline-primary btn-sm">
+                                    إنشاء التقرير
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="quick-report">
+                                <i class="fas fa-calendar-alt"></i>
+                                <h6>تقرير شهري</h6>
+                                <p>ملخص شامل للأدوية والصحة لهذا الشهر</p>
+                                <a href="{{ url_for('generate_report') }}?type=monthly"
+                                    class="btn btn-outline-primary btn-sm">
+                                    إنشاء التقرير
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="quick-report">
+                                <i class="fas fa-user-md"></i>
+                                <h6>تقرير للطبيب</h6>
+                                <p>تقرير مفصل للطبيب المعالج</p>
+                                <a href="{{ url_for('generate_report') }}?type=doctor"
+                                    class="btn btn-outline-primary btn-sm">
+                                    إنشاء التقرير
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="quick-report">
+                                <i class="fas fa-heartbeat"></i>
+                                <h6>ملخص صحي</h6>
+                                <p>ملخص شامل عن الحالة الصحية</p>
+                                <a href="{{ url_for('generate_report') }}?type=health"
+                                    class="btn btn-outline-primary btn-sm">
+                                    إنشاء التقرير
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stat-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 20px;
+        font-size: 24px;
+        color: white;
+    }
+
+    .stat-card:nth-child(1) .stat-icon {
+        background: #28a745;
+    }
+
+    .stat-card:nth-child(2) .stat-icon {
+        background: #17a2b8;
+    }
+
+    .stat-card:nth-child(3) .stat-icon {
+        background: #ffc107;
+    }
+
+    .stat-card:nth-child(4) .stat-icon {
+        background: #dc3545;
+    }
+
+    .stat-content h3 {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #495057;
+    }
+
+    .stat-content p {
+        margin-bottom: 10px;
+        color: #6c757d;
+    }
+
+    .stat-detail .badge {
+        font-size: 0.8rem;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+    }
+
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .stat-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .stat-label {
+        font-weight: 500;
+        color: #495057;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #007bff;
+    }
+
+    .stat-percentage {
+        font-size: 0.9rem;
+        color: #28a745;
+        font-weight: 500;
+    }
+
+    .quick-report {
+        text-align: center;
+        padding: 20px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        height: 100%;
+    }
+
+    .quick-report i {
+        font-size: 2rem;
+        color: #007bff;
+        margin-bottom: 15px;
+    }
+
+    .quick-report h6 {
+        margin-bottom: 10px;
+        color: #495057;
+    }
+
+    .quick-report p {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 15px;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // رسم بياني للأدوية
+    const medicationsCtx = document.getElementById('medicationsChart').getContext('2d');
+    new Chart(medicationsCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['نشط', 'غير نشط'],
+            datasets: [{
+                data: [{{ stats.medications.active }}, {{ stats.medications.total - stats.medications.active }}],
+        backgroundColor: ['#28a745', '#dc3545'],
+        borderWidth: 0
+    }]
+    },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+    // رسم بياني للالتزام
+    const adherenceCtx = document.getElementById('adherenceChart').getContext('2d');
+    new Chart(adherenceCtx, {
+        type: 'line',
+        data: {
+            labels: ['الأسبوع 1', 'الأسبوع 2', 'الأسبوع 3', 'الأسبوع 4'],
+            datasets: [{
+                label: 'نسبة الالتزام',
+                data: [85, 92, 78, 95],
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,459 @@
+{% extends "base.html" %}
+
+{% block title %}قائمة المرضى - دوائي{% endblock %}
+
+{% block content %}
+<div class="doctor-patients-container">
+    <div class="page-header">
+        <h1><i class="fas fa-users" style="color: #4FC3F7;"></i> قائمة المرضى</h1>
+        <p>جميع المرضى المتابعين لديك</p>
+    </div>
+
+    <div class="patients-section">
+        {% if patients %}
+        <div class="patients-grid">
+            {% for patient in patients %}
+            <div class="patient-card">
+                <div class="patient-avatar">
+                    <i class="fas fa-user" style="font-size: 2em; color: #81C784;"></i>
+                </div>
+                <div class="patient-info">
+                    <h3>{{ patient.full_name }}</h3>
+                    <p><i class="fas fa-envelope"></i> {{ patient.email }}</p>
+                    {% if patient.phone %}
+                    <p><i class="fas fa-phone"></i> {{ patient.phone }}</p>
+                    {% endif %}
+                    {% if patient.date_of_birth %}
+                    <p><i class="fas fa-birthday-cake"></i> {{ patient.date_of_birth.strftime('%Y-%m-%d') if patient.date_of_birth else 'غير محدد' }}</p>
+                    {% endif %}
+                </div>
+                <div class="patient-actions">
+                    <a href="{{ url_for('doctor_patient_detail', patient_id=patient.id) }}" class="btn btn-primary">
+                        <i class="fas fa-eye"></i> عرض التفاصيل
+                    </a>
+                    <button class="btn btn-notify" onclick="openNotificationModal({{ patient.id }}, '{{ patient.full_name }}')">
+                        <i class="fas fa-bell"></i> إرسال إشعار
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-user-friends" style="font-size: 4em; color: #ccc;"></i>
+            <p>لا يوجد مرضى متابعين حالياً</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .doctor-patients-container {
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .page-header h1 {
+        margin: 0 0 10px 0;
+        color: #333;
+    }
+
+    .patients-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .patient-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .patient-avatar {
+        margin-bottom: 15px;
+    }
+
+    .patient-info h3 {
+        margin: 0 0 10px 0;
+        color: #333;
+    }
+
+    .patient-info p {
+        margin: 5px 0;
+        color: #666;
+    }
+
+    .patient-actions {
+        margin-top: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-primary {
+        background: #42A5F5;
+        color: white;
+    }
+
+    .btn-notify {
+        background: #FF9800;
+        color: white;
+        margin-top: 10px;
+    }
+
+    .btn-notify:hover {
+        background: #F57C00;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+    }
+
+    .notification-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .notification-modal.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .modal-header {
+        margin-bottom: 20px;
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        color: #333;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+        font-weight: bold;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+
+    .form-group textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+
+    .btn-modal {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .btn-modal-primary {
+        background: #42A5F5;
+        color: white;
+    }
+
+    .btn-modal-secondary {
+        background: #ccc;
+        color: #333;
+    }
+
+    .btn-modal:hover {
+        opacity: 0.9;
+    }
+</style>
+
+<div id="notificationModal" class="notification-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-bell"></i> إرسال إشعار</h2>
+        </div>
+        <form id="notificationForm">
+            <input type="hidden" id="patientId" name="patient_id">
+            <div class="form-group">
+                <label>المريض:</label>
+                <input type="text" id="patientName" readonly>
+            </div>
+            <div class="form-group">
+                <label>عنوان الإشعار:</label>
+                <input type="text" id="notificationTitle" name="title" value="إشعار من الطبيب" required>
+            </div>
+            <div class="form-group">
+                <label>الرسالة:</label>
+                <textarea id="notificationMessage" name="message" required>هذا إشعار تجريبي من الطبيب</textarea>
+            </div>
+            <div class="form-group">
+                <label>نوع الإشعار:</label>
+                <select id="notificationType" name="type">
+                    <option value="info">معلومات</option>
+                    <option value="medication">دواء</option>
+                    <option value="appointment">موعد</option>
+                    <option value="warning">تحذير</option>
+                    <option value="success">نجاح</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>بعد كم دقيقة يظهر الإشعار:</label>
+                <input type="number" id="delayMinutes" name="delay_minutes" value="1" min="1" max="60" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-modal btn-modal-secondary" onclick="closeNotificationModal()">إلغاء</button>
+                <button type="submit" class="btn-modal btn-modal-primary">جدولة الإشعار</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openNotificationModal(patientId, patientName) {
+        document.getElementById('patientId').value = patientId;
+        document.getElementById('patientName').value = patientName;
+        document.getElementById('notificationModal').classList.add('active');
+    }
+
+    function closeNotificationModal() {
+        document.getElementById('notificationModal').classList.remove('active');
+        document.getElementById('notificationForm').reset();
+    }
+
+    document.getElementById('notificationForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            patient_id: parseInt(document.getElementById('patientId').value),
+            title: document.getElementById('notificationTitle').value,
+            message: document.getElementById('notificationMessage').value,
+            type: document.getElementById('notificationType').value,
+            delay_minutes: parseInt(document.getElementById('delayMinutes').value)
+        };
+
+        try {
+            const response = await fetch('/api/notifications/schedule', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert('تم جدولة الإشعار بنجاح! سيظهر بعد ' + formData.delay_minutes + ' دقيقة');
+                closeNotificationModal();
+                
+                // بدء مراقبة الإشعارات المجدولة
+                startNotificationChecker(formData.delay_minutes);
+            } else {
+                alert('خطأ: ' + (data.error || 'فشل جدولة الإشعار'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء جدولة الإشعار');
+        }
+    });
+
+    // مراقبة الإشعارات المجدولة
+    let notificationCheckInterval = null;
+
+    function startNotificationChecker(delayMinutes) {
+        if (notificationCheckInterval) {
+            clearInterval(notificationCheckInterval);
+        }
+
+        const checkTime = delayMinutes * 60 * 1000; // تحويل إلى ميلي ثانية
+        
+        // التحقق من الإشعارات المجدولة كل 5 ثواني
+        notificationCheckInterval = setInterval(async () => {
+            try {
+                // التحقق من الإشعارات المجدولة وإرسالها
+                await fetch('/api/notifications/check-scheduled', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                // جلب الإشعارات الجديدة
+                const response = await fetch('/api/notifications');
+                const data = await response.json();
+                
+                if (data.length > 0) {
+                    const unreadCount = data.filter(n => !n.isRead).length;
+                    if (unreadCount > 0) {
+                        showNotificationBadge();
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking notifications:', error);
+            }
+        }, 5000); // كل 5 ثواني
+
+        // إظهار الإشعار بعد الوقت المحدد
+        setTimeout(() => {
+            checkAndShowNotification();
+        }, checkTime);
+    }
+
+    async function checkAndShowNotification() {
+        try {
+            // التحقق من الإشعارات المجدولة وإرسالها
+            await fetch('/api/notifications/check-scheduled', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            // جلب الإشعارات الجديدة
+            const response = await fetch('/api/notifications');
+            const data = await response.json();
+            
+            if (data.length > 0) {
+                const latestNotification = data[0];
+                showNotificationBadge(latestNotification);
+            }
+        } catch (error) {
+            console.error('Error checking notifications:', error);
+        }
+    }
+
+    function loadNotifications() {
+        fetch('/api/notifications')
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    const unreadCount = data.filter(n => !n.isRead).length;
+                    if (unreadCount > 0) {
+                        showNotificationBadge();
+                    }
+                }
+            })
+            .catch(error => console.error('Error loading notifications:', error));
+    }
+
+    function showNotificationBadge(notification = null) {
+        // إظهار إشعار في الصفحة
+        const notificationDiv = document.createElement('div');
+        notificationDiv.className = 'in-app-notification';
+        notificationDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #4CAF50; color: white; padding: 15px 20px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 9999; max-width: 350px; animation: slideIn 0.3s ease-out;';
+        
+        const title = notification ? notification.title : 'إشعار جديد';
+        const message = notification ? notification.body : 'لديك إشعار جديد من الطبيب';
+        
+        notificationDiv.innerHTML = `
+            <div style="display: flex; align-items: flex-start; gap: 10px;">
+                <i class="fas fa-bell" style="font-size: 20px; margin-top: 2px;"></i>
+                <div style="flex: 1;">
+                    <strong style="display: block; margin-bottom: 5px;">${title}</strong>
+                    <p style="margin: 0; font-size: 14px; line-height: 1.4;">${message}</p>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0; line-height: 1;">×</button>
+            </div>
+        `;
+        document.body.appendChild(notificationDiv);
+
+        // إزالة الإشعار تلقائياً بعد 8 ثواني
+        setTimeout(() => {
+            if (notificationDiv.parentElement) {
+                notificationDiv.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => {
+                    if (notificationDiv.parentElement) {
+                        notificationDiv.remove();
+                    }
+                }, 300);
+            }
+        }, 8000);
+    }
+
+    // إضافة أنيميشن للشريحة
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // إغلاق النافذة عند النقر خارجها
+    document.getElementById('notificationModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeNotificationModal();
+        }
+    });
+</script>
+{% endblock %}
+

@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}الدفع - دوائي{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="page-title">
+                <i class="fas fa-shopping-cart"></i>
+                الدفع والتوصيل
+            </h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- ملخص الطلب -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> ملخص الطلب</h5>
+                </div>
+                <div class="card-body">
+                    {% if cart_items %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>المنتج</th>
+                                    <th>السعر</th>
+                                    <th>الكمية</th>
+                                    <th>المجموع</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in cart_items %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ item.product.name }}</strong>
+                                        {% if item.product.generic_name %}
+                                        <br><small class="text-muted">{{ item.product.generic_name }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ "%.2f"|format(item.product.price) }} ريال</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ "%.2f"|format(item.subtotal) }} ريال</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        السلة فارغة
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- نموذج الدفع -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-credit-card"></i> معلومات الدفع</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+
+                        <div class="mb-3">
+                            {{ form.pharmacy_id.label(class="form-label") }}
+                            {{ form.pharmacy_id(class="form-select") }}
+                            {% if form.pharmacy_id.errors %}
+                            <div class="text-danger">
+                                {% for error in form.pharmacy_id.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.delivery_address.label(class="form-label") }}
+                            {{ form.delivery_address(class="form-control", rows="3") }}
+                            {% if form.delivery_address.errors %}
+                            <div class="text-danger">
+                                {% for error in form.delivery_address.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.delivery_phone.label(class="form-label") }}
+                            {{ form.delivery_phone(class="form-control") }}
+                            {% if form.delivery_phone.errors %}
+                            <div class="text-danger">
+                                {% for error in form.delivery_phone.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.payment_method.label(class="form-label") }}
+                            {{ form.payment_method(class="form-select") }}
+                            {% if form.payment_method.errors %}
+                            <div class="text-danger">
+                                {% for error in form.payment_method.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.delivery_notes.label(class="form-label") }}
+                            {{ form.delivery_notes(class="form-control", rows="2") }}
+                            {% if form.delivery_notes.errors %}
+                            <div class="text-danger">
+                                {% for error in form.delivery_notes.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.prescription_image.label(class="form-label") }}
+                            {{ form.prescription_image(class="form-control") }}
+                            {% if form.prescription_image.errors %}
+                            <div class="text-danger">
+                                {% for error in form.prescription_image.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-check"></i>
+                                تأكيد الطلب
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ملخص التكلفة -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-calculator"></i> ملخص التكلفة</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>المجموع الفرعي:</span>
+                        <span>{{ "%.2f"|format(total) }} ريال</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>رسوم التوصيل:</span>
+                        <span>0.00 ريال</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>الضريبة:</span>
+                        <span>0.00 ريال</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>المجموع الكلي:</strong>
+                        <strong>{{ "%.2f"|format(total) }} ريال</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

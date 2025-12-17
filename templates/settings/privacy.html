@@ -1,0 +1,645 @@
+{% extends "base.html" %}
+
+{% block title %}إعدادات الخصوصية - دوائي{% endblock %}
+
+{% block content %}
+<div class="privacy-settings-container">
+    <div class="page-header">
+        <h1><i class="fas fa-shield-alt"></i> إعدادات الخصوصية</h1>
+        <p>تحكم في خصوصية بياناتك ومعلوماتك الشخصية</p>
+    </div>
+
+    <div class="settings-container">
+        <form method="POST" class="privacy-form">
+            <div class="settings-section">
+                <h3><i class="fas fa-user-friends"></i> إعدادات الملف الشخصي</h3>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>رؤية الملف الشخصي</h4>
+                        <p>من يمكنه رؤية ملفك الشخصي ومعلوماتك</p>
+                    </div>
+                    <div class="setting-control">
+                        <select name="profile_visibility" class="form-select">
+                            <option value="private" {% if current_user.profile_visibility=='private' %}selected{% endif
+                                %}>خاص (أنا فقط)</option>
+                            <option value="doctors" {% if current_user.profile_visibility=='doctors' %}selected{% endif
+                                %}>الأطباء فقط</option>
+                            <option value="pharmacists" {% if current_user.profile_visibility=='pharmacists'
+                                %}selected{% endif %}>الصيادلة فقط</option>
+                            <option value="public" {% if current_user.profile_visibility=='public' %}selected{% endif
+                                %}>عام (الجميع)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>مشاركة البيانات الطبية</h4>
+                        <p>السماح بمشاركة بياناتك الطبية مع الأطباء والصيادلة</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="data_sharing" {% if current_user.data_sharing %}checked{% endif
+                                %}>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>مشاركة الإحصائيات</h4>
+                        <p>السماح بمشاركة إحصائيات استخدامك للمنصة (بدون معلومات شخصية)</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="analytics_tracking" {% if current_user.analytics_tracking
+                                %}checked{% endif %}>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3><i class="fas fa-lock"></i> إعدادات الأمان</h3>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>تسجيل الدخول الآمن</h4>
+                        <p>تفعيل المصادقة الثنائية لحسابك</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="two_factor_auth" disabled>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <small class="setting-note">قريباً</small>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>جلسات نشطة</h4>
+                        <p>عرض وإدارة جلسات تسجيل الدخول النشطة</p>
+                    </div>
+                    <div class="setting-control">
+                        <button type="button" class="btn-info" onclick="showActiveSessions()">
+                            <i class="fas fa-eye"></i> عرض الجلسات
+                        </button>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>سجل الأنشطة</h4>
+                        <p>عرض سجل أنشطة حسابك</p>
+                    </div>
+                    <div class="setting-control">
+                        <button type="button" class="btn-info" onclick="showActivityLog()">
+                            <i class="fas fa-history"></i> عرض السجل
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3><i class="fas fa-database"></i> إدارة البيانات</h3>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>تصدير البيانات</h4>
+                        <p>تحميل نسخة من جميع بياناتك</p>
+                    </div>
+                    <div class="setting-control">
+                        <button type="button" class="btn-success" onclick="exportData()">
+                            <i class="fas fa-download"></i> تصدير البيانات
+                        </button>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>حذف الحساب</h4>
+                        <p>حذف حسابك وجميع البيانات المرتبطة به نهائياً</p>
+                    </div>
+                    <div class="setting-control">
+                        <button type="button" class="btn-danger" onclick="deleteAccount()">
+                            <i class="fas fa-trash"></i> حذف الحساب
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i> حفظ الإعدادات
+                </button>
+                <a href="{{ url_for('profile') }}" class="btn-secondary">
+                    <i class="fas fa-arrow-right"></i> العودة للملف الشخصي
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- نافذة الجلسات النشطة -->
+    <div id="sessionsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>الجلسات النشطة</h3>
+                <span class="close" onclick="closeModal('sessionsModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="session-item">
+                    <div class="session-info">
+                        <h4>الجهاز الحالي</h4>
+                        <p>Windows 10 - Chrome</p>
+                        <small>آخر نشاط: الآن</small>
+                    </div>
+                    <div class="session-status">
+                        <span class="status-active">نشط</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة سجل الأنشطة -->
+    <div id="activityModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>سجل الأنشطة</h3>
+                <span class="close" onclick="closeModal('activityModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </div>
+                    <div class="activity-info">
+                        <h4>تسجيل الدخول</h4>
+                        <p>تم تسجيل الدخول بنجاح</p>
+                        <small>منذ 5 دقائق</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .privacy-settings-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 30px;
+        text-align: center;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .page-header h1 {
+        margin: 0 0 10px 0;
+        color: var(--text-primary);
+        font-size: 2.2em;
+        font-weight: 700;
+    }
+
+    .page-header p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 1.1em;
+    }
+
+    .page-header i {
+        margin-left: 10px;
+        color: var(--primary-color);
+    }
+
+    .settings-container {
+        background: var(--bg-glass);
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        overflow: hidden;
+    }
+
+    .settings-section {
+        padding: 30px;
+        border-bottom: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .settings-section:last-child {
+        border-bottom: none;
+    }
+
+    .settings-section h3 {
+        margin: 0 0 25px 0;
+        color: var(--text-primary);
+        font-size: 1.4em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .settings-section h3 i {
+        color: var(--primary-color);
+    }
+
+    .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 0;
+        border-bottom: 1px solid rgba(0, 191, 166, 0.1);
+    }
+
+    .setting-item:last-child {
+        border-bottom: none;
+    }
+
+    .setting-info {
+        flex: 1;
+    }
+
+    .setting-info h4 {
+        margin: 0 0 5px 0;
+        color: var(--text-primary);
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
+    .setting-info p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+        line-height: 1.4;
+    }
+
+    .setting-control {
+        margin-left: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked+.toggle-slider {
+        background-color: var(--primary-color);
+    }
+
+    input:checked+.toggle-slider:before {
+        transform: translateX(26px);
+    }
+
+    .form-select {
+        padding: 8px 12px;
+        border: 2px solid rgba(0, 191, 166, 0.3);
+        border-radius: 6px;
+        font-size: 14px;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        cursor: pointer;
+    }
+
+    .form-select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+    }
+
+    .btn-info,
+    .btn-success,
+    .btn-danger {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-info {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .btn-info:hover {
+        background: #138496;
+    }
+
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #218838;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #c82333;
+    }
+
+    .setting-note {
+        color: var(--text-secondary);
+        font-size: 0.8em;
+        font-style: italic;
+    }
+
+    .form-actions {
+        padding: 30px;
+        background: var(--bg-secondary);
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-secondary {
+        background: var(--bg-card);
+        color: var(--text-primary);
+        padding: 15px 30px;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 2px solid rgba(0, 191, 166, 0.3);
+    }
+
+    .btn-secondary:hover {
+        background: var(--bg-glass);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* النوافذ المنبثقة */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+        background: var(--bg-glass);
+        margin: 5% auto;
+        padding: 0;
+        border-radius: 15px;
+        width: 80%;
+        max-width: 600px;
+        box-shadow: var(--shadow-xl);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .modal-header {
+        padding: 20px 30px;
+        border-bottom: 1px solid rgba(0, 191, 166, 0.2);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 1.3em;
+        font-weight: 600;
+    }
+
+    .close {
+        color: var(--text-secondary);
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    .close:hover {
+        color: var(--text-primary);
+    }
+
+    .modal-body {
+        padding: 30px;
+    }
+
+    .session-item,
+    .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+
+    .session-info h4,
+    .activity-info h4 {
+        margin: 0 0 5px 0;
+        color: var(--text-primary);
+        font-size: 1em;
+        font-weight: 600;
+    }
+
+    .session-info p,
+    .activity-info p {
+        margin: 0 0 5px 0;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+    }
+
+    .session-info small,
+    .activity-info small {
+        color: var(--text-muted);
+        font-size: 0.8em;
+    }
+
+    .status-active {
+        background: #28a745;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: 500;
+    }
+
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .activity-icon i {
+        color: white;
+        font-size: 1.1em;
+    }
+
+    @media (max-width: 768px) {
+        .privacy-settings-container {
+            padding: 15px;
+        }
+
+        .settings-section {
+            padding: 20px;
+        }
+
+        .setting-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .setting-control {
+            margin-left: 0;
+            align-self: flex-end;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .modal-content {
+            width: 95%;
+            margin: 10% auto;
+        }
+    }
+</style>
+
+<script>
+    function showActiveSessions() {
+        document.getElementById('sessionsModal').style.display = 'block';
+    }
+
+    function showActivityLog() {
+        document.getElementById('activityModal').style.display = 'block';
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+
+    function exportData() {
+        if (confirm('هل تريد تصدير جميع بياناتك؟ قد يستغرق هذا بعض الوقت.')) {
+            // في التطبيق الحقيقي، ستقوم بإنشاء ملف ZIP يحتوي على جميع البيانات
+            alert('سيتم إرسال رابط التحميل إلى بريدك الإلكتروني قريباً');
+        }
+    }
+
+    function deleteAccount() {
+        if (confirm('هل أنت متأكد من حذف حسابك نهائياً؟ لا يمكن التراجع عن هذا الإجراء.')) {
+            const confirmation = prompt('اكتب "حذف" للتأكيد:');
+            if (confirmation === 'حذف') {
+                // في التطبيق الحقيقي، ستقوم بحذف الحساب
+                alert('سيتم حذف حسابك خلال 30 يوماً. يمكنك إلغاء هذا الإجراء خلال هذه الفترة.');
+            }
+        }
+    }
+
+    // إغلاق النوافذ المنبثقة عند النقر خارجها
+    window.onclick = function (event) {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+</script>
+{% endblock %}

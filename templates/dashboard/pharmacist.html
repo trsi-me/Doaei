@@ -1,0 +1,678 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة تحكم الصيدلي - دوائي{% endblock %}
+
+{% block content %}
+<div class="pharmacist-dashboard-container">
+    <div class="dashboard-header">
+        <h1><i class="fas fa-pills" style="color: #FF6B6B;"></i> لوحة تحكم الصيدلي</h1>
+        <p>مرحباً {{ current_user.full_name }} - إدارة الاستشارات والرد عليها</p>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- الاستشارات المعلقة -->
+        <div class="dashboard-card consultations-card">
+            <div class="card-header">
+                <h3><i class="fas fa-comments" style="color: #4ECDC4;"></i> الاستشارات المعلقة</h3>
+                <span class="card-count">{{ pending_consultations|length }}</span>
+            </div>
+            <div class="card-content">
+                {% if pending_consultations %}
+                <div class="consultations-list">
+                    {% for consultation in pending_consultations %}
+                    <div class="consultation-item">
+                        <div class="consultation-header">
+                            <div class="consultation-subject">
+                                <i class="fas fa-question-circle" style="color: #FFD93D;"></i>
+                                {{ consultation.subject }}
+                            </div>
+                            <div class="consultation-status">
+                                <span class="status-badge status-pending">
+                                    <i class="fas fa-clock" style="color: white;"></i> معلق
+                                </span>
+                            </div>
+                        </div>
+                        <div class="consultation-patient">
+                            <i class="fas fa-user" style="color: #81C784;"></i>
+                            <span>{{ consultation.patient.full_name if consultation.patient else 'مريض' }}</span>
+                        </div>
+                        <div class="consultation-message">
+                            <i class="fas fa-envelope" style="color: #64B5F6;"></i>
+                            <span>{{ consultation.message[:100] }}{% if consultation.message|length > 100 %}...{% endif %}</span>
+                        </div>
+                        <div class="consultation-date">
+                            <i class="fas fa-calendar-alt" style="color: #FFB74D;"></i>
+                            <span>{% if consultation.created_at %}{{ consultation.created_at.strftime('%Y-%m-%d %H:%M') }}{% else %}غير محدد{% endif %}</span>
+                        </div>
+                        <div class="consultation-actions">
+                            <a href="{{ url_for('reply_consultation', consultation_id=consultation.id) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-reply" style="color: white;"></i> رد على الاستشارة
+                            </a>
+                            <a href="{{ url_for('view_consultation', consultation_id=consultation.id) }}" class="btn btn-sm btn-secondary">
+                                <i class="fas fa-eye" style="color: white;"></i> عرض التفاصيل
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-comments" style="color: #90A4AE; font-size: 3em;"></i></div>
+                    <p>لا توجد استشارات معلقة حالياً</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- آخر الاستشارات المردودة -->
+        <div class="dashboard-card replied-card">
+            <div class="card-header">
+                <h3><i class="fas fa-check-circle" style="color: #66BB6A;"></i> آخر الاستشارات المردودة</h3>
+                <a href="#" class="card-link">عرض الكل</a>
+            </div>
+            <div class="card-content">
+                {% if recent_replied %}
+                <div class="replied-list">
+                    {% for consultation in recent_replied %}
+                    <div class="replied-item">
+                        <div class="replied-header">
+                            <div class="replied-subject">
+                                <i class="fas fa-check" style="color: #66BB6A;"></i>
+                                {{ consultation.subject }}
+                            </div>
+                            <div class="replied-status">
+                                <span class="status-badge status-replied">
+                                    <i class="fas fa-check-circle" style="color: white;"></i> تم الرد
+                                </span>
+                            </div>
+                        </div>
+                        <div class="replied-patient">
+                            <i class="fas fa-user" style="color: #81C784;"></i>
+                            <span>{{ consultation.patient.full_name if consultation.patient else 'مريض' }}</span>
+                        </div>
+                        {% if consultation.reply %}
+                        <div class="replied-message">
+                            <i class="fas fa-reply" style="color: #4ECDC4;"></i>
+                            <span>{{ consultation.reply[:80] }}{% if consultation.reply|length > 80 %}...{% endif %}</span>
+                        </div>
+                        {% endif %}
+                        <div class="replied-date">
+                            <i class="fas fa-calendar-check" style="color: #66BB6A;"></i>
+                            <span>{% if consultation.replied_at %}{{ consultation.replied_at.strftime('%Y-%m-%d %H:%M') }}{% else %}غير محدد{% endif %}</span>
+                        </div>
+                        <div class="replied-actions">
+                            <a href="{{ url_for('view_consultation', consultation_id=consultation.id) }}" class="btn btn-sm btn-secondary">
+                                <i class="fas fa-eye" style="color: white;"></i> عرض التفاصيل
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-check-circle" style="color: #90A4AE; font-size: 3em;"></i></div>
+                    <p>لا توجد استشارات مردودة بعد</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- الإحصائيات السريعة -->
+        <div class="dashboard-card stats-card">
+            <div class="card-header">
+                <h3><i class="fas fa-chart-bar" style="color: #9575CD;"></i> إحصائيات سريعة</h3>
+            </div>
+            <div class="card-content">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-icon"><i class="fas fa-comments" style="color: #4ECDC4;"></i></div>
+                        <div class="stat-value">{{ pending_consultations|length }}</div>
+                        <div class="stat-label">استشارات معلقة</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon"><i class="fas fa-check-circle" style="color: #66BB6A;"></i></div>
+                        <div class="stat-value">{{ recent_replied|length }}</div>
+                        <div class="stat-label">استشارات مردودة</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon"><i class="fas fa-clock" style="color: #FFB74D;"></i></div>
+                        <div class="stat-value">{{ (pending_consultations|length + recent_replied|length) }}</div>
+                        <div class="stat-label">إجمالي الاستشارات</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon"><i class="fas fa-star" style="color: #FFD54F;"></i></div>
+                        <div class="stat-value">4.8</div>
+                        <div class="stat-label">التقييم العام</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الإجراءات السريعة -->
+        <div class="dashboard-card actions-card">
+            <div class="card-header">
+                <h3><i class="fas fa-bolt" style="color: #FFA726;"></i> إجراءات سريعة</h3>
+            </div>
+            <div class="card-content">
+                <div class="quick-actions">
+                    <a href="{{ url_for('consultations') }}" class="quick-action">
+                        <div class="action-icon"><i class="fas fa-comments" style="color: #4ECDC4;"></i></div>
+                        <div class="action-text">جميع الاستشارات</div>
+                    </a>
+                    <a href="{{ url_for('consultations') }}?status=pending" class="quick-action">
+                        <div class="action-icon"><i class="fas fa-clock" style="color: #FFB74D;"></i></div>
+                        <div class="action-text">الاستشارات المعلقة</div>
+                    </a>
+                    <a href="{{ url_for('consultations') }}?status=replied" class="quick-action">
+                        <div class="action-icon"><i class="fas fa-check-circle" style="color: #66BB6A;"></i></div>
+                        <div class="action-text">الاستشارات المردودة</div>
+                    </a>
+                    <a href="{{ url_for('profile') }}" class="quick-action">
+                        <div class="action-icon"><i class="fas fa-user-edit" style="color: #26A69A;"></i></div>
+                        <div class="action-text">الملف الشخصي</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* لوحة تحكم الصيدلي - دارك مود محسن */
+    .pharmacist-dashboard-container {
+        max-width: 100%;
+        margin: 0;
+        padding: 30px;
+        background: var(--bg-gradient);
+        min-height: calc(100vh - 75px);
+        position: relative;
+        overflow-x: hidden;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .pharmacist-dashboard-container::before {
+        content: '';
+        position: fixed;
+        top: 75px;
+        left: 0;
+        width: 100%;
+        height: calc(100vh - 75px);
+        background: radial-gradient(circle at 20% 80%, rgba(255, 107, 107, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .dashboard-header {
+        text-align: center;
+        margin-bottom: 30px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .dashboard-header h1 {
+        color: var(--text-primary);
+        margin-bottom: 10px;
+        font-size: 2em;
+        font-weight: 700;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .dashboard-header h1 i {
+        margin-left: 10px;
+    }
+
+    .dashboard-header p {
+        color: var(--text-secondary);
+        font-size: 1.1em;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 25px;
+        max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .dashboard-card {
+        background: var(--bg-glass);
+        -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(20px);
+        border-radius: var(--border-radius-lg);
+        border: 1px solid rgba(255, 107, 107, 0.2);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .dashboard-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #FF6B6B, #4ECDC4);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .dashboard-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg), 0 0 20px rgba(255, 107, 107, 0.3);
+        border-color: #FF6B6B;
+    }
+
+    .dashboard-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 107, 107, 0.2);
+        background: var(--bg-glass-hover);
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .card-header h3 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 1.2em;
+        font-weight: 600;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .card-header h3 i {
+        margin-left: 8px;
+    }
+
+    .card-count {
+        background: linear-gradient(135deg, #FF6B6B, #FF5252);
+        color: white;
+        padding: 5px 12px;
+        border-radius: var(--border-radius);
+        font-size: 0.9em;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    }
+
+    .card-link {
+        color: #FF6B6B;
+        font-size: 0.9em;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .card-link:hover {
+        color: #4ECDC4;
+        text-decoration: underline;
+    }
+
+    .card-content {
+        padding: 20px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+
+    /* قائمة الاستشارات المعلقة */
+    .consultations-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .consultation-item {
+        padding: 18px;
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(255, 107, 107, 0.2);
+        transition: all 0.3s ease;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .consultation-item:hover {
+        border-color: #FF6B6B;
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.2);
+    }
+
+    .consultation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .consultation-subject {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 1em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        min-width: 0;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .consultation-status {
+        flex-shrink: 0;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        font-weight: 600;
+    }
+
+    .status-pending {
+        background: linear-gradient(135deg, #FFB74D, #FFA726);
+        color: white;
+    }
+
+    .status-replied {
+        background: linear-gradient(135deg, #66BB6A, #4CAF50);
+        color: white;
+    }
+
+    .consultation-patient,
+    .consultation-message,
+    .consultation-date {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .consultation-message {
+        color: var(--text-primary);
+        font-style: italic;
+    }
+
+    .consultation-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+        flex-wrap: wrap;
+    }
+
+    /* قائمة الاستشارات المردودة */
+    .replied-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .replied-item {
+        padding: 18px;
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(102, 187, 106, 0.2);
+        transition: all 0.3s ease;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .replied-item:hover {
+        border-color: #66BB6A;
+        box-shadow: 0 4px 15px rgba(102, 187, 106, 0.2);
+    }
+
+    .replied-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .replied-subject {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 0.95em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        min-width: 0;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .replied-patient,
+    .replied-message,
+    .replied-date {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        color: var(--text-secondary);
+        font-size: 0.85em;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .replied-message {
+        color: var(--text-primary);
+        font-style: italic;
+    }
+
+    .replied-actions {
+        margin-top: 15px;
+    }
+
+    /* الإحصائيات */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 15px;
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(255, 107, 107, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .stat-item:hover {
+        border-color: #FF6B6B;
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.2);
+    }
+
+    .stat-icon {
+        font-size: 2em;
+        margin-bottom: 8px;
+    }
+
+    .stat-value {
+        font-size: 1.8em;
+        font-weight: 700;
+        color: #FF6B6B;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 0.85em;
+        color: var(--text-secondary);
+    }
+
+    /* الإجراءات السريعة */
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .quick-action {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        background: var(--bg-glass-hover);
+        border-radius: var(--border-radius);
+        text-decoration: none;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 107, 107, 0.2);
+    }
+
+    .quick-action:hover {
+        background: var(--bg-glass);
+        transform: translateY(-2px);
+        border-color: #FF6B6B;
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.2);
+    }
+
+    .action-icon {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+    }
+
+    .action-text {
+        font-size: 0.9em;
+        font-weight: 500;
+        text-align: center;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--text-secondary);
+    }
+
+    .empty-icon {
+        margin-bottom: 15px;
+    }
+
+    .empty-state p {
+        margin: 0;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    /* الأزرار */
+    .btn {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: var(--border-radius);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.85em;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #FF6B6B, #FF5252);
+        color: white;
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+    }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, #4ECDC4, #26A69A);
+        color: white;
+        box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+    }
+
+    .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
+    }
+
+    /* التصميم المتجاوب */
+    @media (max-width: 1200px) {
+        .dashboard-grid {
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .pharmacist-dashboard-container {
+            padding: 20px;
+        }
+
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .consultation-actions {
+            flex-direction: column;
+        }
+
+        .consultation-actions .btn {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .pharmacist-dashboard-container {
+            padding: 15px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.5em;
+        }
+
+        .card-content {
+            padding: 15px;
+        }
+
+        .consultation-header,
+        .replied-header {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}

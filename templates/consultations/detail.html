@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block title %}تفاصيل الاستشارة - دوائي{% endblock %}
+
+{% block content %}
+<div class="consultation-detail-container">
+    <div class="page-header">
+        <h1><i class="fas fa-comments"></i> تفاصيل الاستشارة</h1>
+        <p>عرض تفاصيل الاستشارة والردود</p>
+        <a href="{{ url_for('consultations') }}" class="btn btn-outline">
+            <i class="fas fa-arrow-right"></i> العودة للقائمة
+        </a>
+    </div>
+
+    <div class="consultation-detail">
+        <div class="consultation-card">
+            <div class="consultation-header">
+                <div class="consultation-meta">
+                    <h2>{{ consultation.subject }}</h2>
+                    <div class="consultation-info">
+                        <span class="consultation-date">
+                            <i class="fas fa-calendar"></i> {% if consultation.created_at %}{{ consultation.created_at.strftime('%Y-%m-%d %H:%M') }}{% else %}غير محدد{% endif %}
+                        </span>
+                        <span class="consultation-status">
+                            <span class="status-badge status-{{ consultation.status }}">
+                                {% if consultation.status == 'pending' %}
+                                <i class="fas fa-clock"></i> في الانتظار
+                                {% elif consultation.status == 'in_progress' %}
+                                <i class="fas fa-spinner"></i> قيد المراجعة
+                                {% elif consultation.status == 'completed' %}
+                                <i class="fas fa-check"></i> مكتملة
+                                {% elif consultation.status == 'closed' %}
+                                <i class="fas fa-times"></i> مغلقة
+                                {% endif %}
+                            </span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="consultation-content">
+                <div class="consultation-details">
+                    {% if consultation.category %}
+                    <div class="detail-item">
+                        <label><i class="fas fa-tag"></i> الفئة:</label>
+                        <span>{{ consultation.category }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="detail-item">
+                        <label><i class="fas fa-exclamation-triangle"></i> الأولوية:</label>
+                        <span class="priority-{{ consultation.priority }}">
+                            {% if consultation.priority == 'low' %}
+                            منخفضة
+                            {% elif consultation.priority == 'medium' %}
+                            متوسطة
+                            {% elif consultation.priority == 'high' %}
+                            عالية
+                            {% elif consultation.priority == 'urgent' %}
+                            عاجلة
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    {% if consultation.is_anonymous %}
+                    <div class="detail-item">
+                        <label><i class="fas fa-user-secret"></i> النوع:</label>
+                        <span>استشارة مجهولة</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="consultation-message">
+                    <h3><i class="fas fa-comment"></i> تفاصيل الاستشارة:</h3>
+                    <div class="message-content">
+                        {{ consultation.message|replace('\n', '<br>')|safe }}
+                    </div>
+                </div>
+
+                {% if consultation.reply %}
+                <div class="consultation-response">
+                    <h3><i class="fas fa-reply"></i> رد الصيدلي:</h3>
+                    <div class="response-content">
+                        {{ consultation.reply|replace('\n', '<br>')|safe }}
+                    </div>
+                    <div class="response-meta">
+                        <span class="response-date">
+                            <i class="fas fa-calendar"></i>
+                            تم الرد في: {% if consultation.replied_at %}{{ consultation.replied_at.strftime('%Y-%m-%d %H:%M') }}{% else %}غير محدد{% endif %}
+                        </span>
+                        {% if consultation.pharmacist %}
+                        <span class="response-pharmacist">
+                            <i class="fas fa-user-md"></i>
+                            الصيدلي: {{ consultation.pharmacist.full_name or consultation.pharmacist.username }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="consultation-actions">
+                {% if current_user.role == 'pharmacist' and consultation.status == 'pending' %}
+                <button onclick="showResponseForm()" class="btn btn-primary">
+                    <i class="fas fa-reply"></i> الرد على الاستشارة
+                </button>
+                {% endif %}
+
+                {% if consultation.status == 'completed' and consultation.patient_id == current_user.id %}
+                <button onclick="closeConsultation({{ consultation.id }})" class="btn btn-outline">
+                    <i class="fas fa-times"></i> إغلاق الاستشارة
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- نموذج الرد (للصيادلة فقط) -->
+    {% if current_user.role == 'pharmacist' and consultation.status == 'pending' %}
+    <div id="response-form" class="response-form-container" style="display: none;">
+        <div class="response-form">
+            <h3><i class="fas fa-reply"></i> الرد على الاستشارة</h3>
+            <form id="consultation-response-form">
+                <div class="form-group">
+                    <label for="response" class="form-label">الرد:</label>
+                    <textarea name="response" id="response" class="form-textarea" rows="6"
+                        placeholder="اكتب ردك على الاستشارة هنا..." required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> إرسال الرد
+                    </button>
+                    <button type="button" onclick="hideResponseForm()" class="btn btn-outline">
+                        <i class="fas fa-times"></i> إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .consultation-detail {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .consultation-meta h2 {
+        margin: 0 0 15px 0;
+        color: #2c3e50;
+    }
+
+    .consultation-info {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .consultation-details {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+
+    .detail-item label {
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .consultation-message,
+    .consultation-response {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .consultation-message h3,
+    .consultation-response h3 {
+        margin: 0 0 15px 0;
+        color: #2c3e50;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+    }
+
+    .message-content,
+    .response-content {
+        line-height: 1.6;
+        color: #495057;
+    }
+
+    .response-meta {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        font-size: 0.9em;
+        color: #6c757d;
+    }
+
+    .response-form-container {
+        max-width: 600px;
+        margin: 20px auto;
+    }
+
+    .response-form {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+    }
+
+    .response-form h3 {
+        margin: 0 0 20px 0;
+        color: #2c3e50;
+    }
+
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: 500;
+    }
+
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .status-in_progress {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .status-completed {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-closed {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .priority-low {
+        color: #28a745;
+    }
+
+    .priority-medium {
+        color: #ffc107;
+    }
+
+    .priority-high {
+        color: #fd7e14;
+    }
+
+    .priority-urgent {
+        color: #dc3545;
+        font-weight: bold;
+    }
+</style>
+
+<script>
+    function showResponseForm() {
+        document.getElementById('response-form').style.display = 'block';
+        document.getElementById('response').focus();
+    }
+
+    function hideResponseForm() {
+        document.getElementById('response-form').style.display = 'none';
+        document.getElementById('consultation-response-form').reset();
+    }
+
+    function closeConsultation(consultationId) {
+        if (confirm('هل أنت متأكد من إغلاق هذه الاستشارة؟')) {
+            fetch(`/consultations/${consultationId}/close`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message || 'حدث خطأ أثناء إغلاق الاستشارة');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء إغلاق الاستشارة');
+                });
+        }
+    }
+
+    // معالجة نموذج الرد
+    document.addEventListener('DOMContentLoaded', function () {
+        const responseForm = document.getElementById('consultation-response-form');
+        if (responseForm) {
+            responseForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const response = document.getElementById('response').value;
+                if (!response.trim()) {
+                    alert('يرجى كتابة رد');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('response', response);
+
+                fetch(`/consultations/{{ consultation.id }}/respond`, {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert(data.message || 'حدث خطأ أثناء إرسال الرد');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('حدث خطأ أثناء إرسال الرد');
+                    });
+            });
+        }
+    });
+</script>
+{% endblock %}

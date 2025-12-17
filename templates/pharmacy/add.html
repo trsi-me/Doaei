@@ -1,0 +1,621 @@
+{% extends "base.html" %}
+
+{% block title %}إضافة صيدلية جديدة - دوائي{% endblock %}
+
+{% block content %}
+<div class="pharmacy-form-container">
+    <div class="page-header">
+        <h1><i class="fas fa-plus-circle"></i> إضافة صيدلية جديدة</h1>
+        <p>سجل صيدلية جديدة في النظام</p>
+    </div>
+
+    <div class="form-container">
+        <form method="POST" enctype="multipart/form-data" class="pharmacy-form">
+            {{ form.hidden_tag() }}
+
+            <div class="form-section">
+                <h3><i class="fas fa-store"></i> معلومات الصيدلية الأساسية</h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name" class="form-label">
+                            <i class="fas fa-sign"></i> اسم الصيدلية
+                        </label>
+                        {{ form.name(class="form-input", placeholder="أدخل اسم الصيدلية") }}
+                        {% if form.name.errors %}
+                        <div class="error-messages">
+                            {% for error in form.name.errors %}
+                            <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="license_number" class="form-label">
+                            <i class="fas fa-certificate"></i> رقم الترخيص
+                        </label>
+                        {{ form.license_number(class="form-input", placeholder="أدخل رقم الترخيص") }}
+                        {% if form.license_number.errors %}
+                        <div class="error-messages">
+                            {% for error in form.license_number.errors %}
+                            <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone" class="form-label">
+                            <i class="fas fa-phone"></i> رقم الهاتف
+                        </label>
+                        {{ form.phone(class="form-input", placeholder="أدخل رقم الهاتف") }}
+                        {% if form.phone.errors %}
+                        <div class="error-messages">
+                            {% for error in form.phone.errors %}
+                            <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="form-label">
+                            <i class="fas fa-envelope"></i> البريد الإلكتروني
+                        </label>
+                        {{ form.email(class="form-input", placeholder="أدخل البريد الإلكتروني") }}
+                        {% if form.email.errors %}
+                        <div class="error-messages">
+                            {% for error in form.email.errors %}
+                            <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="fas fa-map-marker-alt"></i> العنوان والموقع</h3>
+
+                <div class="form-group">
+                    <label for="address" class="form-label">
+                        <i class="fas fa-home"></i> العنوان التفصيلي
+                    </label>
+                    {{ form.address(class="form-textarea", placeholder="أدخل العنوان التفصيلي") }}
+                    {% if form.address.errors %}
+                    <div class="error-messages">
+                        {% for error in form.address.errors %}
+                        <span class="error-message">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="city" class="form-label">
+                            <i class="fas fa-city"></i> المدينة
+                        </label>
+                        {{ form.city(class="form-select") }}
+                        {% if form.city.errors %}
+                        <div class="error-messages">
+                            {% for error in form.city.errors %}
+                            <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="postal_code" class="form-label">
+                            <i class="fas fa-mail-bulk"></i> الرمز البريدي
+                        </label>
+                        {{ form.postal_code(class="form-input", placeholder="أدخل الرمز البريدي") }}
+                        {% if form.postal_code.errors %}
+                        <div class="error-messages">
+                            {% for error in form.postal_code.errors %}
+                            <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="latitude" class="form-label">
+                            <i class="fas fa-map-pin"></i> خط العرض
+                        </label>
+                        {{ form.latitude(class="form-input", placeholder="مثال: 24.7136") }}
+                        {% if form.latitude.errors %}
+                        <div class="error-messages">
+                            {% for error in form.latitude.errors %}
+                            <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="longitude" class="form-label">
+                            <i class="fas fa-map-pin"></i> خط الطول
+                        </label>
+                        {{ form.longitude(class="form-input", placeholder="مثال: 46.6753") }}
+                        {% if form.longitude.errors %}
+                        <div class="error-messages">
+                            {% for error in form.longitude.errors %}
+                            <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="fas fa-clock"></i> ساعات العمل</h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="working_hours_weekdays" class="form-label">
+                            <i class="fas fa-calendar-week"></i> ساعات العمل (السبت - الخميس)
+                        </label>
+                        {{ form.working_hours_weekdays(class="form-input", placeholder="مثال: 8:00 ص - 12:00 م") }}
+                        {% if form.working_hours_weekdays.errors %}
+                        <div class="error-messages">
+                            {% for error in form.working_hours_weekdays.errors %}
+                            <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="working_hours_friday" class="form-label">
+                            <i class="fas fa-calendar-day"></i> ساعات العمل (الجمعة)
+                        </label>
+                        {{ form.working_hours_friday(class="form-input", placeholder="مثال: 2:00 م - 10:00 م") }}
+                        {% if form.working_hours_friday.errors %}
+                        <div class="error-messages">
+                            {% for error in form.working_hours_friday.errors %}
+                            <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        {{ form.is_24_hours() }}
+                        <span class="checkbox-text">صيدلية 24 ساعة</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="fas fa-cogs"></i> الخدمات المتاحة</h3>
+
+                <div class="services-grid">
+                    <div class="service-item">
+                        <label class="checkbox-label">
+                            {{ form.delivery_available() }}
+                            <span class="checkbox-text">خدمة التوصيل</span>
+                        </label>
+                    </div>
+
+                    <div class="service-item">
+                        <label class="checkbox-label">
+                            {{ form.consultation_available() }}
+                            <span class="checkbox-text">الاستشارات الطبية</span>
+                        </label>
+                    </div>
+
+                    <div class="service-item">
+                        <label class="checkbox-label">
+                            {{ form.emergency_service() }}
+                            <span class="checkbox-text">خدمة الطوارئ</span>
+                        </label>
+                    </div>
+
+                    <div class="service-item">
+                        <label class="checkbox-label">
+                            {{ form.online_ordering() }}
+                            <span class="checkbox-text">الطلب الإلكتروني</span>
+                        </label>
+                    </div>
+
+                    <div class="service-item">
+                        <label class="checkbox-label">
+                            {{ form.prescription_services() }}
+                            <span class="checkbox-text">خدمات الوصفات الطبية</span>
+                        </label>
+                    </div>
+
+                    <div class="service-item">
+                        <label class="checkbox-label">
+                            {{ form.health_products() }}
+                            <span class="checkbox-text">المنتجات الصحية</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="fas fa-image"></i> الصور والملفات</h3>
+
+                <div class="form-group">
+                    <label for="logo" class="form-label">
+                        <i class="fas fa-image"></i> شعار الصيدلية
+                    </label>
+                    {{ form.logo(class="form-file") }}
+                    {% if form.logo.errors %}
+                    <div class="error-messages">
+                        {% for error in form.logo.errors %}
+                        <span class="error-message">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <small class="form-help">يمكنك رفع شعار الصيدلية (اختياري)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="license_document" class="form-label">
+                        <i class="fas fa-file-pdf"></i> وثيقة الترخيص
+                    </label>
+                    {{ form.license_document(class="form-file") }}
+                    {% if form.license_document.errors %}
+                    <div class="error-messages">
+                        {% for error in form.license_document.errors %}
+                        <span class="error-message">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <small class="form-help">ارفع وثيقة الترخيص الرسمية</small>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="fas fa-user-tie"></i> معلومات مدير الصيدلية</h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="manager_name" class="form-label">
+                            <i class="fas fa-user"></i> اسم المدير
+                        </label>
+                        {{ form.manager_name(class="form-input", placeholder="أدخل اسم مدير الصيدلية") }}
+                        {% if form.manager_name.errors %}
+                        <div class="error-messages">
+                            {% for error in form.manager_name.errors %}
+                            <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="manager_phone" class="form-label">
+                            <i class="fas fa-phone"></i> هاتف المدير
+                        </label>
+                        {{ form.manager_phone(class="form-input", placeholder="أدخل هاتف المدير") }}
+                        {% if form.manager_phone.errors %}
+                        <div class="error-messages">
+                            {% for error in form.manager_phone.errors %}
+                            <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="manager_email" class="form-label">
+                        <i class="fas fa-envelope"></i> بريد المدير الإلكتروني
+                    </label>
+                    {{ form.manager_email(class="form-input", placeholder="أدخل بريد المدير الإلكتروني") }}
+                    {% if form.manager_email.errors %}
+                    <div class="error-messages">
+                        {% for error in form.manager_email.errors %}
+                        <span class="error-message">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i> حفظ الصيدلية
+                </button>
+                <a href="{{ url_for('pharmacy_list') }}" class="btn-secondary">
+                    <i class="fas fa-times"></i> إلغاء
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .pharmacy-form-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 30px;
+        text-align: center;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .page-header h1 {
+        margin: 0 0 10px 0;
+        color: var(--text-primary);
+        font-size: 2.2em;
+        font-weight: 700;
+    }
+
+    .page-header p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 1.1em;
+    }
+
+    .page-header i {
+        margin-left: 10px;
+        color: var(--primary-color);
+    }
+
+    .form-container {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .form-section {
+        margin-bottom: 40px;
+        padding-bottom: 30px;
+        border-bottom: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .form-section h3 {
+        margin: 0 0 25px 0;
+        color: var(--text-primary);
+        font-size: 1.4em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-section h3 i {
+        color: var(--primary-color);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 1em;
+    }
+
+    .form-label i {
+        margin-left: 8px;
+        color: var(--primary-color);
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid rgba(0, 191, 166, 0.3);
+        border-radius: 8px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(0, 191, 166, 0.1);
+    }
+
+    .form-textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .form-file {
+        width: 100%;
+        padding: 10px;
+        border: 2px dashed rgba(0, 191, 166, 0.3);
+        border-radius: 8px;
+        background: var(--bg-secondary);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .form-file:hover {
+        border-color: var(--primary-color);
+        background: var(--bg-card);
+    }
+
+    .form-help {
+        display: block;
+        margin-top: 5px;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    .checkbox-label input[type="checkbox"] {
+        margin-left: 10px;
+        width: 18px;
+        height: 18px;
+        accent-color: var(--primary-color);
+    }
+
+    .checkbox-text {
+        flex: 1;
+    }
+
+    .services-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .service-item {
+        background: var(--bg-secondary);
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .service-item:hover {
+        background: var(--bg-card);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .error-messages {
+        margin-top: 8px;
+    }
+
+    .error-message {
+        display: block;
+        color: #dc3545;
+        font-size: 0.9em;
+        margin-bottom: 5px;
+        background: rgba(220, 53, 69, 0.1);
+        padding: 8px 12px;
+        border-radius: 4px;
+        border-left: 4px solid #dc3545;
+    }
+
+    .form-actions {
+        padding-top: 30px;
+        border-top: 1px solid rgba(0, 191, 166, 0.2);
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-secondary {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        padding: 15px 30px;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 2px solid rgba(0, 191, 166, 0.3);
+    }
+
+    .btn-secondary:hover {
+        background: var(--bg-card);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    @media (max-width: 768px) {
+        .pharmacy-form-container {
+            padding: 15px;
+        }
+
+        .form-container {
+            padding: 20px;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .services-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}

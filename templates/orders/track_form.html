@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}تتبع الطلب - دوائي{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h4><i class="fas fa-search"></i> تتبع الطلب</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+
+                        <div class="mb-3">
+                            {{ form.order_number.label(class="form-label") }}
+                            {{ form.order_number(class="form-control", placeholder="أدخل رقم الطلب") }}
+                            {% if form.order_number.errors %}
+                            <div class="text-danger">
+                                {% for error in form.order_number.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i>
+                                تتبع الطلب
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr>
+
+                    <div class="text-center">
+                        <h6>معلومات مفيدة:</h6>
+                        <ul class="list-unstyled text-muted">
+                            <li><i class="fas fa-info-circle"></i> رقم الطلب مكون من 10 أرقام</li>
+                            <li><i class="fas fa-clock"></i> قد يستغرق التحديث بعض الوقت</li>
+                            <li><i class="fas fa-phone"></i> للاستفسارات: 920000000</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- حالات الطلب -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> حالات الطلب</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="status-item">
+                                <span class="badge bg-warning">في الانتظار</span>
+                                <small class="text-muted">تم استلام الطلب</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="status-item">
+                                <span class="badge bg-info">مؤكد</span>
+                                <small class="text-muted">تم تأكيد الطلب</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="status-item">
+                                <span class="badge bg-primary">قيد التحضير</span>
+                                <small class="text-muted">يتم تحضير الطلب</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="status-item">
+                                <span class="badge bg-secondary">جاهز للتوصيل</span>
+                                <small class="text-muted">الطلب جاهز</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="status-item">
+                                <span class="badge bg-warning">في الطريق</span>
+                                <small class="text-muted">خارج للتوصيل</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="status-item">
+                                <span class="badge bg-success">تم التوصيل</span>
+                                <small class="text-muted">تم التسليم</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .status-item {
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    .status-item .badge {
+        display: block;
+        margin-bottom: 5px;
+    }
+</style>
+{% endblock %}

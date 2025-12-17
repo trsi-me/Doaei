@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}تفاصيل المريض - {{ patient.full_name }}{% endblock %}
+
+{% block content %}
+<div class="doctor-patient-detail-container">
+    <div class="page-header">
+        <h1><i class="fas fa-user" style="color: #81C784;"></i> {{ patient.full_name }}</h1>
+        <a href="{{ url_for('doctor_patients') }}" class="btn btn-secondary">العودة للقائمة</a>
+    </div>
+
+    <div class="patient-details-grid">
+        <!-- معلومات المريض -->
+        <div class="detail-card">
+            <h2><i class="fas fa-info-circle"></i> المعلومات الشخصية</h2>
+            <div class="detail-item">
+                <span class="label">البريد الإلكتروني:</span>
+                <span class="value">{{ patient.email }}</span>
+            </div>
+            {% if patient.phone %}
+            <div class="detail-item">
+                <span class="label">الهاتف:</span>
+                <span class="value">{{ patient.phone }}</span>
+            </div>
+            {% endif %}
+            {% if patient.date_of_birth %}
+            <div class="detail-item">
+                <span class="label">تاريخ الميلاد:</span>
+                <span class="value">{% if patient.date_of_birth %}{{ patient.date_of_birth.strftime('%Y-%m-%d') }}{% else %}غير محدد{% endif %}</span>
+            </div>
+            {% endif %}
+            {% if patient.gender %}
+            <div class="detail-item">
+                <span class="label">الجنس:</span>
+                <span class="value">{{ patient.gender }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- الأدوية -->
+        <div class="detail-card">
+            <h2><i class="fas fa-pills"></i> الأدوية النشطة</h2>
+            {% if medications %}
+            <ul class="medications-list">
+                {% for medication in medications %}
+                <li>{{ medication.name }} - {{ medication.dosage }}</li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>لا توجد أدوية نشطة</p>
+            {% endif %}
+        </div>
+
+        <!-- التقييمات -->
+        <div class="detail-card">
+            <h2><i class="fas fa-clipboard-list"></i> التقييمات الأخيرة</h2>
+            {% if evaluations %}
+            <ul class="evaluations-list">
+                {% for evaluation in evaluations[:5] %}
+                <li>
+                    <a href="{{ url_for('doctor_evaluation_detail', evaluation_id=evaluation.id) }}">
+                        {{ evaluation.evaluation_date.strftime('%Y-%m-%d') if evaluation.evaluation_date else 'غير محدد' }} - {{ evaluation.evaluation_type or 'عام' }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>لا توجد تقييمات</p>
+            {% endif %}
+        </div>
+
+        <!-- الاستشارات -->
+        <div class="detail-card">
+            <h2><i class="fas fa-comments"></i> الاستشارات الأخيرة</h2>
+            {% if consultations %}
+            <ul class="consultations-list">
+                {% for consultation in consultations %}
+                <li>
+                    <a href="{{ url_for('view_consultation', consultation_id=consultation.id) }}">
+                        {{ consultation.created_at.strftime('%Y-%m-%d') if consultation.created_at else 'غير محدد' }} - {{ consultation.question[:50] }}...
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>لا توجد استشارات</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .doctor-patient-detail-container {
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        color: #333;
+    }
+
+    .patient-details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .detail-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .detail-card h2 {
+        margin: 0 0 15px 0;
+        color: #333;
+        border-bottom: 2px solid #e0e0e0;
+        padding-bottom: 10px;
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .detail-item .label {
+        font-weight: 600;
+        color: #666;
+    }
+
+    .detail-item .value {
+        color: #333;
+    }
+
+    .medications-list, .evaluations-list, .consultations-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .medications-list li, .evaluations-list li, .consultations-list li {
+        padding: 10px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .medications-list li:last-child, .evaluations-list li:last-child, .consultations-list li:last-child {
+        border-bottom: none;
+    }
+
+    .evaluations-list a, .consultations-list a {
+        color: #42A5F5;
+        text-decoration: none;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-secondary {
+        background: #999;
+        color: white;
+    }
+</style>
+{% endblock %}
+

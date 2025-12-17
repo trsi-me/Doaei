@@ -1,0 +1,610 @@
+{% extends "base.html" %}
+
+{% block title %}قائمة المنتجات - دوائي{% endblock %}
+
+{% block content %}
+<div class="products-container">
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-info">
+                <h1><i class="fas fa-pills"></i> قائمة المنتجات</h1>
+                <p>تصفح وابحث عن الأدوية والمنتجات الصحية</p>
+            </div>
+            <div class="header-actions">
+                {% if current_user.role in ['user', 'pharmacist'] %}
+                <a href="{{ url_for('add_product') }}" class="btn-primary">
+                    <i class="fas fa-plus"></i> إضافة منتج
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- فلاتر البحث -->
+    <div class="filters-section">
+        <form method="GET" class="filters-form">
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label for="q" class="filter-label">البحث</label>
+                    <input type="text" name="q" id="q" class="filter-input" placeholder="ابحث عن منتج..."
+                        value="{{ search_query }}">
+                </div>
+
+                <div class="filter-group">
+                    <label for="category" class="filter-label">الفئة</label>
+                    <select name="category" id="category" class="filter-select">
+                        <option value="">جميع الفئات</option>
+                        {% for category in categories %}
+                        <option value="{{ category[0] }}" {% if current_category==category[0] %}selected{% endif %}>
+                            {{ category[0] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <button type="submit" class="btn-filter">
+                        <i class="fas fa-search"></i> بحث
+                    </button>
+                    <a href="{{ url_for('products_list') }}" class="btn-clear">
+                        <i class="fas fa-times"></i> مسح
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- قائمة المنتجات -->
+    <div class="products-grid">
+        {% if products.items %}
+        {% for product in products.items %}
+        <div class="product-card">
+            <div class="product-image">
+                {% if product.image_url %}
+                <img src="{{ product.image_url }}" alt="{{ product.name }}">
+                {% else %}
+                <div class="no-image">
+                    <i class="fas fa-pills"></i>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="product-info">
+                <h3 class="product-name">{{ product.name }}</h3>
+                {% if product.generic_name %}
+                <p class="product-generic">{{ product.generic_name }}</p>
+                {% endif %}
+
+                <div class="product-details">
+                    <span class="product-category">{{ product.category }}</span>
+                    <span class="product-form">{{ product.form }}</span>
+                </div>
+
+                <div class="product-price">
+                    <span class="price">{{ "%.2f"|format(product.price) }} ريال</span>
+                    {% if product.requires_prescription %}
+                    <span class="prescription-badge">وصفة طبية</span>
+                    {% endif %}
+                </div>
+
+                <div class="product-stock">
+                    {% if product.is_in_stock() %}
+                    <span class="stock-available">
+                        <i class="fas fa-check-circle"></i> متوفر
+                    </span>
+                    {% else %}
+                    <span class="stock-unavailable">
+                        <i class="fas fa-times-circle"></i> غير متوفر
+                    </span>
+                    {% endif %}
+
+                    {% if product.is_low_stock() %}
+                    <span class="stock-low">
+                        <i class="fas fa-exclamation-triangle"></i> مخزون منخفض
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="product-actions">
+                <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn-view">
+                    <i class="fas fa-eye"></i> عرض التفاصيل
+                </a>
+
+                {% if current_user.role in ['user', 'pharmacist'] %}
+                <a href="{{ url_for('edit_product', product_id=product.id) }}" class="btn-edit">
+                    <i class="fas fa-edit"></i> تعديل
+                </a>
+                {% endif %}
+
+                {% if product.is_in_stock() and current_user.role == 'patient' %}
+                <button class="btn-add-cart" onclick="addToCart({{ product.id }})">
+                    <i class="fas fa-cart-plus"></i> إضافة للسلة
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="no-products">
+            <i class="fas fa-search"></i>
+            <h3>لا توجد منتجات</h3>
+            <p>لم يتم العثور على منتجات تطابق معايير البحث</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ترقيم الصفحات -->
+    {% if products.pages > 1 %}
+    <div class="pagination">
+        {% if products.has_prev %}
+        <a href="{{ url_for('products_list', page=products.prev_num, q=search_query, category=current_category) }}"
+            class="page-link">
+            <i class="fas fa-chevron-right"></i> السابق
+        </a>
+        {% endif %}
+
+        {% for page_num in products.iter_pages() %}
+        {% if page_num %}
+        {% if page_num != products.page %}
+        <a href="{{ url_for('products_list', page=page_num, q=search_query, category=current_category) }}"
+            class="page-link">{{ page_num }}</a>
+        {% else %}
+        <span class="page-current">{{ page_num }}</span>
+        {% endif %}
+        {% else %}
+        <span class="page-ellipsis">...</span>
+        {% endif %}
+        {% endfor %}
+
+        {% if products.has_next %}
+        <a href="{{ url_for('products_list', page=products.next_num, q=search_query, category=current_category) }}"
+            class="page-link">
+            التالي <i class="fas fa-chevron-left"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .products-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        background: var(--bg-glass);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 30px;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-info h1 {
+        margin: 0 0 10px 0;
+        color: var(--text-primary);
+        font-size: 2.2em;
+        font-weight: 700;
+    }
+
+    .header-info p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 1.1em;
+    }
+
+    .header-info i {
+        margin-left: 10px;
+        color: var(--primary-color);
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 15px;
+    }
+
+    .filters-section {
+        background: var(--bg-glass);
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 30px;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .filters-form {
+        width: 100%;
+    }
+
+    .filters-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr auto;
+        gap: 20px;
+        align-items: end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-label {
+        margin-bottom: 8px;
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 0.9em;
+    }
+
+    .filter-input,
+    .filter-select {
+        padding: 12px 15px;
+        border: 2px solid rgba(0, 191, 166, 0.3);
+        border-radius: 8px;
+        font-size: 16px;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+    }
+
+    .filter-input:focus,
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(0, 191, 166, 0.1);
+    }
+
+    .btn-filter,
+    .btn-clear {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-filter {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-filter:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+    }
+
+    .btn-clear {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        border: 2px solid rgba(0, 191, 166, 0.3);
+    }
+
+    .btn-clear:hover {
+        background: var(--bg-card);
+        transform: translateY(-2px);
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+    }
+
+    .product-card {
+        background: var(--bg-glass);
+        border-radius: 15px;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 191, 166, 0.2);
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .product-image {
+        height: 200px;
+        background: var(--bg-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .no-image {
+        color: var(--text-secondary);
+        font-size: 3em;
+    }
+
+    .product-info {
+        padding: 20px;
+    }
+
+    .product-name {
+        margin: 0 0 10px 0;
+        color: var(--text-primary);
+        font-size: 1.3em;
+        font-weight: 600;
+    }
+
+    .product-generic {
+        margin: 0 0 15px 0;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+        font-style: italic;
+    }
+
+    .product-details {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .product-category,
+    .product-form {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: 500;
+    }
+
+    .product-price {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .price {
+        color: var(--primary-color);
+        font-size: 1.2em;
+        font-weight: 700;
+    }
+
+    .prescription-badge {
+        background: #ffc107;
+        color: #212529;
+        padding: 2px 6px;
+        border-radius: 8px;
+        font-size: 0.7em;
+        font-weight: 600;
+    }
+
+    .product-stock {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-bottom: 20px;
+    }
+
+    .stock-available {
+        color: #28a745;
+        font-size: 0.9em;
+        font-weight: 500;
+    }
+
+    .stock-unavailable {
+        color: #dc3545;
+        font-size: 0.9em;
+        font-weight: 500;
+    }
+
+    .stock-low {
+        color: #ffc107;
+        font-size: 0.8em;
+        font-weight: 500;
+    }
+
+    .product-actions {
+        padding: 0 20px 20px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn-view,
+    .btn-edit,
+    .btn-add-cart {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-view {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-view:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+    }
+
+    .btn-edit {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .btn-edit:hover {
+        background: #138496;
+        transform: translateY(-2px);
+    }
+
+    .btn-add-cart {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-add-cart:hover {
+        background: #218838;
+        transform: translateY(-2px);
+    }
+
+    .no-products {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-secondary);
+    }
+
+    .no-products i {
+        font-size: 4em;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+    }
+
+    .no-products h3 {
+        margin: 0 0 10px 0;
+        color: var(--text-primary);
+        font-size: 1.5em;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-top: 30px;
+    }
+
+    .page-link {
+        padding: 10px 15px;
+        background: var(--bg-glass);
+        color: var(--text-primary);
+        text-decoration: none;
+        border-radius: 8px;
+        border: 1px solid rgba(0, 191, 166, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .page-link:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .page-current {
+        padding: 10px 15px;
+        background: var(--primary-color);
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .page-ellipsis {
+        padding: 10px 5px;
+        color: var(--text-secondary);
+    }
+
+    @media (max-width: 768px) {
+        .header-content {
+            flex-direction: column;
+            gap: 20px;
+            text-align: center;
+        }
+
+        .filters-row {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .products-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    function addToCart(productId) {
+        fetch('/cart/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `product_id=${productId}&quantity=1`
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('تم إضافة المنتج للسلة', 'success');
+                } else {
+                    showNotification(data.message || 'خطأ في إضافة المنتج', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('حدث خطأ في إضافة المنتج', 'error');
+            });
+    }
+
+    function showNotification(message, type) {
+        // إنشاء إشعار مؤقت
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+
+        notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+    `;
+
+        if (type === 'success') {
+            notification.style.background = '#28a745';
+        } else {
+            notification.style.background = '#dc3545';
+        }
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+</script>
+{% endblock %}
