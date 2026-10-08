@@ -56,8 +56,8 @@ def create_default_admin(cursor):
     # Create default admin user
     import bcrypt
     
-    # Unified password: 123456
-    password_hash = bcrypt.hashpw('123456'.encode('utf-8'), bcrypt.gensalt())
+    # Unified password removed from source
+    password_hash = bcrypt.hashpw(''.encode('utf-8'), bcrypt.gensalt())
     
     cursor.execute('''
         INSERT OR IGNORE INTO users 
@@ -74,7 +74,7 @@ def create_default_admin(cursor):
     
     print("Created default admin user:")
     print("   Email : admin@doaei.com")
-    print("   Password : 123456")
+    print("   Password :")
 
 def create_sample_data(cursor):
     # Create sample data for development
@@ -84,7 +84,7 @@ def create_sample_data(cursor):
     users_data = [
         {
             'email': 'patient@doaei.com',
-            'password': '123456',
+            'password': '',
             'full_name': 'أحمد محمد المريض',
             'role': 'patient',
             'phone': '+966501234567',
@@ -97,7 +97,7 @@ def create_sample_data(cursor):
         },
         {
             'email': 'patient2@doaei.com',
-            'password': '123456',
+            'password': '',
             'full_name': 'سارة علي المطيري',
             'role': 'patient',
             'phone': '+966501234568',
@@ -110,7 +110,7 @@ def create_sample_data(cursor):
         },
         {
             'email': 'patient3@doaei.com',
-            'password': '123456',
+            'password': '',
             'full_name': 'محمد خالد النجار',
             'role': 'patient',
             'phone': '+966501234569',
@@ -123,7 +123,7 @@ def create_sample_data(cursor):
         },
         {
             'email': 'patient4@doaei.com',
-            'password': '123456',
+            'password': '',
             'full_name': 'فاطمة سعد الخالدي',
             'role': 'patient',
             'phone': '+966501234570',
@@ -136,35 +136,35 @@ def create_sample_data(cursor):
         },
         {
             'email': 'doctor1@doaei.com',
-            'password': '123456',
+            'password': '',
             'full_name': 'د. أحمد محمد العلي',
             'role': 'doctor',
             'phone': '+966502345678'
         },
         {
             'email': 'doctor2@doaei.com',
-            'password': '123456',
+            'password': '',
             'full_name': 'د. فاطمة سعد الخالدي',
             'role': 'doctor',
             'phone': '+966502345679'
         },
         {
             'email': 'doctor3@doaei.com',
-            'password': '123456',
+            'password': '',
             'full_name': 'د. خالد عبدالله النجار',
             'role': 'doctor',
             'phone': '+966502345680'
         },
         {
             'email': 'doctor4@doaei.com',
-            'password': '123456',
+            'password': '',
             'full_name': 'د. سارة علي المطيري',
             'role': 'doctor',
             'phone': '+966502345681'
         },
         {
             'email': 'pharmacist@doaei.com',
-            'password': '123456',
+            'password': '',
             'full_name': 'خالد الصيدلي',
             'role': 'pharmacist',
             'phone': '+966503456789'

@@ -55,26 +55,26 @@ def reset_database():
         print("-" * 60)
         print("👨‍💼 المدير:")
         print("   البريد: admin@doaei.com")
-        print("   كلمة المرور: 123456")
+        print("   كلمة المرور غير منشورة")
         print("-" * 60)
         print("👤 المرضى:")
         print("   البريد: patient@doaei.com")
-        print("   كلمة المرور: 123456")
+        print("   كلمة المرور غير منشورة")
         print("-" * 60)
         print("👨‍⚕️ الأطباء:")
         print("   البريد: doctor1@doaei.com")
-        print("   كلمة المرور: 123456")
+        print("   كلمة المرور غير منشورة")
         print("-" * 60)
         print("💊 الصيادلة:")
         print("   البريد: pharmacist@doaei.com")
-        print("   كلمة المرور: 123456")
+        print("   كلمة المرور غير منشورة")
         print("=" * 60)
 
 def create_default_users():
     """إنشاء المستخدمين الافتراضيين"""
     
     # كلمة المرور الموحدة لجميع المستخدمين
-    default_password = '123456'
+    default_password = ''
     
     users_data = [
         {
@@ -255,7 +255,7 @@ if __name__ == '__main__':
         print("=" * 60)
         print("\nيمكنك الآن تسجيل الدخول باستخدام:")
         print("   البريد: admin@doaei.com")
-        print("   كلمة المرور: 123456")
+        print("   كلمة المرور غير منشورة")
         print("=" * 60)
         
     except Exception as e:

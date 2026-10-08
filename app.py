@@ -305,7 +305,7 @@ def create_app():
                         if not new_patient:
                             print("Creating patient account...")
                             import bcrypt
-                            password_hash = bcrypt.hashpw('patient123'.encode('utf-8'), bcrypt.gensalt())
+                            password_hash = bcrypt.hashpw(''.encode('utf-8'), bcrypt.gensalt())
                             patient = User(
                                 email='patient@doaei.com',
                                 password_hash=password_hash.decode('utf-8'),
@@ -3476,7 +3476,7 @@ if __name__ == '__main__':
     print("🌐 التطبيق متاح على: http://localhost:5000")
     print("📊 قاعدة البيانات: doaei.db")
     print("👤 حساب المستخدم: admin@doaei.com")
-    print("🔑 كلمة المرور: admin123")
+    print("🔑 كلمة المرور: ")
     print("=" * 60)
     print("اضغط Ctrl+C لإيقاف التطبيق")
     print("=" * 60)

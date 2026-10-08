@@ -29,7 +29,7 @@ def add_default_data():
         import bcrypt
         
         # كلمة المرور الموحدة لجميع المستخدمين
-        UNIFIED_PASSWORD = '123456'
+        UNIFIED_PASSWORD = ''
         password_hash = bcrypt.hashpw(UNIFIED_PASSWORD.encode('utf-8'), bcrypt.gensalt())
         
         print("🔧 تحديث كلمات المرور وإضافة البيانات الافتراضية...")
@@ -41,7 +41,7 @@ def add_default_data():
         if user_count > 0:
             # تحديث كلمات المرور لجميع المستخدمين الموجودين
             cursor.execute("UPDATE users SET password_hash = ?", (password_hash.decode('utf-8'),))
-            print("✅ تم توحيد كلمات المرور لجميع المستخدمين إلى: 123456")
+            print("✅ تم توحيد كلمات المرور لجميع المستخدمين ")
         else:
             print("⚠️ لا توجد مستخدمين في قاعدة البيانات. سيتم إنشاء المستخدمين الافتراضيين...")
         
@@ -672,7 +672,7 @@ def add_default_data():
         
         conn.commit()
         print("\n✅ تم إضافة جميع البيانات الافتراضية بنجاح!")
-        print(f"📋 كلمة المرور الموحدة لجميع المستخدمين: 123456")
+        print(f"📋 كلمة المرور الموحدة غير منشورة")
         return True
         
     except Exception as e:

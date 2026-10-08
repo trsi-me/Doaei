@@ -18,7 +18,7 @@ def fix_all_passwords():
         print("=" * 60)
         
         # كلمة المرور الموحدة
-        default_password = '123456'
+        default_password = ''
         
         # الحصول على جميع المستخدمين
         users = User.query.all()
@@ -50,7 +50,7 @@ def fix_all_passwords():
             print("-" * 60)
             print(f"✅ تم تحديث {updated_count} مستخدم بنجاح!")
             print("=" * 60)
-            print("\n📋 كلمة المرور الموحدة لجميع المستخدمين: 123456")
+            print("\n📋 كلمة المرور الموحدة غير منشورة")
             print("=" * 60)
         except Exception as e:
             db.session.rollback()
@@ -63,7 +63,7 @@ def create_missing_users():
     with app.app_context():
         print("\n👤 التحقق من المستخدمين المفقودين...")
         
-        default_password = '123456'
+        default_password = ''
         
         required_users = [
             {
@@ -123,7 +123,7 @@ if __name__ == '__main__':
         print("🎉 اكتملت العملية بنجاح!")
         print("=" * 60)
         print("\nيمكنك الآن تسجيل الدخول باستخدام:")
-        print("   كلمة المرور الموحدة: 123456")
+        print("   كلمة المرور الموحدة غير منشورة")
         print("=" * 60)
         
     except Exception as e:

@@ -16,14 +16,14 @@ def create_test_users():
         test_users = [
             {
                 'email': 'admin@doaei.com',
-                'password': 'admin123',
+                'password': '',
                 'full_name': 'مدير النظام',
                 'role': 'admin',
                 'phone': '+966501234567'
             },
             {
                 'email': 'patient@example.com',
-                'password': 'patient123',
+                'password': '',
                 'full_name': 'مريض تجريبي',
                 'role': 'patient',
                 'phone': '+966501234568'
